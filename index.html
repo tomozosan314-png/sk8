@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>スケボー連絡帳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<script src="common.js"></script>
+</head>
+<body>
+<header class="band">
+  <div class="band-inner">
+    <p class="school" id="school"></p>
+    <h1 class="title">スケボー連絡帳</h1>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="sample-flag" id="sampleFlag" hidden>これは見本です。コーチから届いたリンクを開くと、お子さまの連絡帳が表示されます。</div>
+
+  <section class="card" aria-labelledby="h-lesson">
+    <h2 id="h-lesson"><span class="dot"></span>レッスン記録</h2>
+    <p class="student" id="student"></p>
+    <dl class="meta">
+      <div><dt>日付</dt><dd id="date"></dd></div>
+      <div><dt>時間</dt><dd id="time"></dd></div>
+      <div class="count"><dt>レッスン</dt><dd id="count"></dd></div>
+    </dl>
+    <div class="sub" id="moodWrap"><h3>今日の様子</h3><p><span class="stars" id="mood"></span> <span id="moodText"></span></p></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-fb">
+    <h2 id="h-fb"><span class="dot"></span>コーチからのフィードバック</h2>
+    <p class="feedback" id="feedback"></p>
+    <div class="sub" id="goodWrap"><h3>よかったところ・できたこと</h3><p id="good"></p></div>
+    <div class="sub" id="nextWrap"><h3>次回の目標</h3><p id="next"></p></div>
+    <div class="sub" id="homeWrap"><h3>おうちでできる練習</h3><p id="home"></p></div>
+  </section>
+
+  <section class="card" id="skillsCard" aria-labelledby="h-sk">
+    <h2 id="h-sk"><span class="dot"></span>技のチェック</h2>
+    <ul class="skills" id="skills"></ul>
+  </section>
+
+  <section class="card" id="noticeCard" aria-labelledby="h-nt">
+    <h2 id="h-nt"><span class="dot"></span>おしらせ・持ち物</h2>
+    <p class="feedback" id="notice"></p>
+  </section>
+
+  <section class="card" aria-labelledby="h-read">
+    <h2 id="h-read"><span class="dot"></span>保護者さま 確認</h2>
+    <p style="margin:0 0 12px">お読みになったら、下のボタンを押してください。コーチに既読が届きます。</p>
+    <button class="btn btn-primary" id="readBtn" type="button"></button>
+    <p class="status" id="readStatus" role="status"></p>
+  </section>
+
+  <section class="card" aria-labelledby="h-msg">
+    <h2 id="h-msg"><span class="dot"></span>質問・メッセージ</h2>
+    <form class="form" id="msgForm">
+      <div class="field">
+        <label for="msgName">お名前（保護者さま）</label>
+        <input type="text" id="msgName" autocomplete="name" placeholder="例：山田（母）">
+      </div>
+      <div class="field">
+        <label for="msgText">内容</label>
+        <textarea id="msgText" required placeholder="質問やご連絡があればご記入ください"></textarea>
+      </div>
+      <button class="btn btn-outline" type="submit" id="msgBtn">メッセージを送る</button>
+      <p class="status" id="msgStatus" role="status"></p>
+    </form>
+  </section>
+
+  <section class="card" aria-labelledby="h-links">
+    <h2 id="h-links"><span class="dot"></span>次回・リンク</h2>
+    <div class="form">
+      <a class="btn btn-primary" id="reserveBtn" target="_blank" rel="noopener"></a>
+      <div class="btn-row">
+        <a class="btn btn-insta" id="instaBtn" target="_blank" rel="noopener"></a>
+        <a class="btn btn-line" id="lineBtn" target="_blank" rel="noopener"></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  const C = window.SK8_CONFIG, S = window.SK8, $ = (id) => document.getElementById(id);
+  $("school").textContent = C.schoolName;
+
+  const SAMPLE = {
+    id: "sample", name: "そうた", grade: "小学2年", date: "2026-11-08", time: "10:00〜11:00", count: 5, coach: "コーチ",
+    mood: 5,
+    feedback: "今日はオーリーの練習をがんばりました！\n最初は後ろ足を弾くタイミングが早かったけど、何回もチャレンジして、最後は少し板が浮くようになりました。転んでもすぐ立ち上がれて、とてもかっこよかったです。",
+    good: "プッシュがとても安定してきました。目線が前を向いています。",
+    next: "オーリーで前足をしっかり引き上げる",
+    home: "平らな場所で、板に乗ったままひざを曲げ伸ばしする練習（10回×3セット）",
+    skills: { "プッシュ（こぐ）": "done", "ストップ": "done", "ターン（チックタック）": "try", "オーリー": "try" },
+    notice: "次回はヘルメット・ひじ・ひざのプロテクターを忘れずにお持ちください。",
+  };
+
+  let data = SAMPLE, isSample = true;
+  const m = location.hash.match(/^#d=(.+)$/);
+  if (m) { try { data = S.decode(m[1]); isSample = false; } catch (e) { /* 壊れたリンクは見本を表示 */ } }
+  $("sampleFlag").hidden = !isSample;
+
+  const setText = (id, v) => { $(id).textContent = v || ""; };
+  const showIf = (wrapId, textId, v) => { $(wrapId).hidden = !v; setText(textId, v); };
+
+  $("student").textContent = (data.name || "") + " さん";
+  if (data.grade) { const s = document.createElement("small"); s.textContent = data.grade; $("student").appendChild(s); }
+  setText("date", S.formatDate(data.date));
+  setText("time", data.time || "—");
+  setText("count", data.count ? data.count + "回目" : "—");
+  const moods = ["", "ちょっと疲れ気味", "ふつう", "楽しそう", "元気いっぱい", "絶好調！"];
+  $("moodWrap").hidden = !data.mood;
+  if (data.mood) { setText("mood", "★".repeat(data.mood) + "☆".repeat(5 - data.mood)); setText("moodText", moods[data.mood]); }
+  setText("feedback", data.feedback);
+  showIf("goodWrap", "good", data.good);
+  showIf("nextWrap", "next", data.next);
+  showIf("homeWrap", "home", data.home);
+  $("noticeCard").hidden = !data.notice; setText("notice", data.notice);
+
+  const sk = Object.entries(data.skills || {});
+  $("skillsCard").hidden = !sk.length;
+  sk.forEach(([name, st]) => {
+    const info = S.SKILL_STATUS[st]; if (!info) return;
+    const li = document.createElement("li");
+    const n = document.createElement("span"); n.textContent = name;
+    const p = document.createElement("span"); p.className = "pill " + info.cls; p.textContent = info.label;
+    li.append(n, p); $("skills").appendChild(li);
+  });
+
+  // 既読ボタン
+  const readKey = "sk8-read-" + data.id;
+  function renderRead(at) {
+    const b = $("readBtn");
+    if (at) { b.className = "btn btn-ok"; b.innerHTML = S.ICONS.check + "<span>既読をお送りしました</span>"; b.disabled = true;
+      $("readStatus").textContent = new Date(at).toLocaleString("ja-JP") + " に確認済み"; $("readStatus").className = "status ok"; }
+    else { b.className = "btn btn-primary"; b.innerHTML = S.ICONS.check + "<span>読みました</span>"; b.disabled = false; }
+  }
+  renderRead(S.store(readKey));
+  $("readBtn").addEventListener("click", async () => {
+    if (isSample) { $("readStatus").textContent = "見本のため送信されません。"; return; }
+    $("readBtn").disabled = true; $("readStatus").textContent = "送信中…"; $("readStatus").className = "status";
+    try {
+      await S.post({ type: "read", id: data.id, name: data.name, date: data.date, count: data.count });
+      const at = new Date().toISOString(); S.store(readKey, at); renderRead(at);
+    } catch (e) {
+      $("readBtn").disabled = false; $("readStatus").className = "status err";
+      $("readStatus").textContent = e.message === "no_gas"
+        ? "まだ送信の設定がされていません。お手数ですが公式LINEで「読みました」とお送りください。"
+        : "送信できませんでした。電波の良い場所でもう一度押してください。";
+    }
+  });
+
+  // メッセージ
+  $("msgName").value = S.store("sk8-parent-name") || "";
+  $("msgForm").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const text = $("msgText").value.trim(); if (!text) return;
+    if (isSample) { $("msgStatus").textContent = "見本のため送信されません。"; return; }
+    $("msgBtn").disabled = true; $("msgStatus").textContent = "送信中…"; $("msgStatus").className = "status";
+    try {
+      await S.post({ type: "message", id: data.id, name: data.name, date: data.date, count: data.count, from: $("msgName").value.trim(), text });
+      S.store("sk8-parent-name", $("msgName").value.trim());
+      $("msgText").value = ""; $("msgStatus").className = "status ok";
+      $("msgStatus").textContent = "送信しました。コーチからの返事は公式LINEなどでお送りします。";
+    } catch (e) {
+      $("msgStatus").className = "status err";
+      $("msgStatus").textContent = e.message === "no_gas"
+        ? "まだ送信の設定がされていません。お手数ですが公式LINEからお送りください。"
+        : "送信できませんでした。もう一度お試しください。";
+    } finally { $("msgBtn").disabled = false; }
+  });
+
+  // リンクボタン
+  const r = $("reserveBtn");
+  if (C.reserveUrl) { r.href = C.reserveUrl; r.innerHTML = S.ICONS.calendar + "<span>次回の予約をする</span>"; }
+  else { r.removeAttribute("href"); r.setAttribute("aria-disabled", "true"); r.innerHTML = S.ICONS.calendar + "<span>次回の予約（準備中）</span>"; }
+  $("instaBtn").href = C.instagramUrl; $("instaBtn").innerHTML = S.ICONS.insta + "<span>Instagram</span>";
+  $("lineBtn").href = C.lineUrl; $("lineBtn").innerHTML = S.ICONS.line + "<span>公式LINE</span>";
+})();
+</script>
+</body>
+</html>
