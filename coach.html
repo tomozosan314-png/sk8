@@ -16,168 +16,195 @@
 <header class="band">
   <div class="band-inner">
     <p class="school" id="school"></p>
-    <h1 class="title">連絡帳を書く（コーチ用）</h1>
+    <h1 class="title">連絡帳（コーチ用）</h1>
   </div>
 </header>
 
 <main class="wrap">
-  <section class="card">
-    <h2><span class="dot"></span>レッスン情報</h2>
-    <div class="form">
-      <div class="grid2">
-        <div class="field"><label for="name">生徒さんの名前</label><input type="text" id="name" placeholder="そうた"></div>
-        <div class="field"><label for="grade">学年・年齢（任意）</label><input type="text" id="grade" placeholder="小学2年"></div>
-      </div>
-      <div class="grid2">
-        <div class="field"><label for="date">日付</label><input type="date" id="date"></div>
-        <div class="field"><label for="time">時間</label><input type="text" id="time" placeholder="10:00〜11:00"></div>
-        <div class="field"><label for="count">何回目</label><input type="number" id="count" min="1" placeholder="5"></div>
-      </div>
-      <div class="field">
-        <label for="mood">今日の様子</label>
-        <select id="mood">
-          <option value="">（表示しない）</option>
-          <option value="5">★★★★★ 絶好調！</option>
-          <option value="4">★★★★☆ 元気いっぱい</option>
-          <option value="3">★★★☆☆ 楽しそう</option>
-          <option value="2">★★☆☆☆ ふつう</option>
-          <option value="1">★☆☆☆☆ ちょっと疲れ気味</option>
-        </select>
-      </div>
-    </div>
+  <!-- ログイン -->
+  <section class="card" id="loginCard">
+    <h2><span class="dot"></span>合言葉を入れてください</h2>
+    <form class="form" id="loginForm">
+      <div class="field"><label for="key">合言葉（Apps Script の ADMIN_KEY）</label><input type="password" id="key" autocomplete="current-password"></div>
+      <button class="btn btn-primary" type="submit">開く</button>
+      <p class="status" id="loginStatus" role="status"></p>
+    </form>
   </section>
 
-  <section class="card">
-    <h2><span class="dot"></span>フィードバック</h2>
-    <div class="form">
-      <div class="field"><label for="feedback">コーチからのフィードバック</label><textarea id="feedback" style="min-height:160px" placeholder="今日の練習の様子や、がんばったことを書いてください"></textarea></div>
-      <div class="field"><label for="good">よかったところ・できたこと（任意）</label><textarea id="good"></textarea></div>
-      <div class="field"><label for="next">次回の目標（任意）</label><input type="text" id="next"></div>
-      <div class="field"><label for="home">おうちでできる練習（任意）</label><textarea id="home"></textarea></div>
-      <div class="field"><label for="notice">おしらせ・持ち物（任意）</label><textarea id="notice"></textarea></div>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2><span class="dot"></span>技のチェック（任意）</h2>
-    <ul class="skills" id="skillPicker"></ul>
-  </section>
-
-  <section class="card">
-    <h2><span class="dot"></span>連絡帳リンクを作る</h2>
-    <button class="btn btn-primary" id="makeBtn" type="button">リンクを作成</button>
-    <div id="out" hidden style="margin-top:12px" class="form">
-      <div class="field"><label for="link">このリンクを保護者さまにLINEなどで送ってください</label><textarea id="link" readonly style="min-height:90px;font-size:13px"></textarea></div>
-      <div class="btn-row">
-        <button class="btn btn-outline" id="copyBtn" type="button">リンクをコピー</button>
-        <a class="btn btn-outline" id="previewBtn" target="_blank" rel="noopener">表示を確認</a>
+  <div id="app" hidden class="wrap-inner">
+    <!-- 連絡帳を書く -->
+    <section class="card">
+      <h2><span class="dot"></span>連絡帳を書く</h2>
+      <form class="form" id="entryForm">
+        <div class="field"><label for="student">生徒さん</label><select id="student" required></select></div>
+        <div class="grid2">
+          <div class="field"><label for="date">日付</label><input type="date" id="date" required></div>
+          <div class="field"><label for="time">時間</label><input type="text" id="time" placeholder="10:00〜11:00"></div>
+          <div class="field"><label for="count">何回目</label><input type="number" id="count" min="1"></div>
+        </div>
+        <div class="field">
+          <label for="mood">今日の様子</label>
+          <select id="mood">
+            <option value="">（表示しない）</option>
+            <option value="5">★★★★★ 絶好調！</option>
+            <option value="4">★★★★☆ 元気いっぱい</option>
+            <option value="3">★★★☆☆ 楽しそう</option>
+            <option value="2">★★☆☆☆ ふつう</option>
+            <option value="1">★☆☆☆☆ ちょっと疲れ気味</option>
+          </select>
+        </div>
+        <div class="field"><label for="feedback">コーチからのフィードバック</label><textarea id="feedback" required style="min-height:160px" placeholder="今日の練習の様子や、がんばったことを書いてください"></textarea></div>
+        <div class="field"><label for="good">よかったところ・できたこと（任意）</label><textarea id="good"></textarea></div>
+        <div class="field"><label for="next">次回の目標（任意）</label><input type="text" id="next"></div>
+        <div class="field"><label for="home">おうちでできる練習（任意）</label><textarea id="home"></textarea></div>
+        <div class="field"><label for="notice">おしらせ・持ち物（任意）</label><textarea id="notice"></textarea></div>
+        <div class="field"><span class="label">技のチェック（任意）</span><ul class="skills" id="skillPicker"></ul></div>
+        <button class="btn btn-primary" type="submit" id="saveBtn">保存する</button>
+        <p class="status" id="saveStatus" role="status"></p>
+      </form>
+      <div id="sendBox" hidden class="form" style="margin-top:12px">
+        <div class="field"><label for="sendText">保護者さまへ送る文（コピーしてLINEへ）</label><textarea id="sendText" readonly></textarea></div>
+        <button class="btn btn-outline" type="button" data-copy="sendText">文をコピー</button>
       </div>
-      <p class="status" id="makeStatus" role="status"></p>
-    </div>
-  </section>
+    </section>
 
-  <section class="card">
-    <h2><span class="dot"></span>既読・メッセージの確認</h2>
-    <div class="form">
-      <div class="field"><label for="key">管理キー（Apps Script で設定したもの）</label><input type="password" id="key" autocomplete="off"></div>
-      <button class="btn btn-outline" id="loadBtn" type="button">最新の状況を見る</button>
-      <p class="status" id="loadStatus" role="status"></p>
-    </div>
-    <div id="dash" hidden>
-      <h3 style="margin:16px 0 6px;font-size:15px">連絡帳</h3>
-      <div class="table-scroll"><table><thead><tr><th>日付</th><th>生徒</th><th>回</th><th>既読</th></tr></thead><tbody id="entryRows"></tbody></table></div>
-      <h3 style="margin:20px 0 6px;font-size:15px">メッセージ</h3>
+    <!-- 既読・メッセージ -->
+    <section class="card">
+      <h2><span class="dot"></span>既読・メッセージ</h2>
+      <button class="btn btn-outline" type="button" id="reloadBtn">最新の状況にする</button>
+      <h3 class="tbl-h">メッセージ</h3>
       <div class="table-scroll"><table><thead><tr><th>受信</th><th>生徒</th><th>差出人</th><th>内容</th></tr></thead><tbody id="msgRows"></tbody></table></div>
-    </div>
-    <p class="note">Googleスプレッドシートを開いても同じ内容を確認できます。</p>
-  </section>
+      <h3 class="tbl-h">連絡帳（新しい順）</h3>
+      <div class="table-scroll"><table><thead><tr><th>日付</th><th>生徒</th><th>回</th><th>既読</th></tr></thead><tbody id="entryRows"></tbody></table></div>
+      <p class="note">連絡帳の文章を直したいときは、スプレッドシートの「連絡帳」シートで直接書き換えられます。</p>
+    </section>
+
+    <!-- 生徒 -->
+    <section class="card">
+      <h2><span class="dot"></span>生徒さん</h2>
+      <form class="form" id="studentForm">
+        <div class="grid2">
+          <div class="field"><label for="sName">名前</label><input type="text" id="sName" required placeholder="そうた"></div>
+          <div class="field"><label for="sGrade">学年・年齢（任意）</label><input type="text" id="sGrade" placeholder="小学2年"></div>
+        </div>
+        <button class="btn btn-outline" type="submit" id="addBtn">生徒さんを登録</button>
+        <p class="status" id="addStatus" role="status"></p>
+      </form>
+      <div id="newStudentBox" hidden class="form" style="margin-top:12px">
+        <div class="field"><label for="welcomeText">専用リンクのご案内（最初に1回だけLINEで送る）</label><textarea id="welcomeText" readonly style="min-height:140px"></textarea></div>
+        <button class="btn btn-outline" type="button" data-copy="welcomeText">文をコピー</button>
+      </div>
+      <h3 class="tbl-h">登録済み</h3>
+      <div class="table-scroll"><table><thead><tr><th>名前</th><th>回数</th><th>専用リンク</th></tr></thead><tbody id="studentRows"></tbody></table></div>
+    </section>
+  </div>
 </main>
 
 <script>
 (function () {
-  const C = window.SK8_CONFIG, S = window.SK8, $ = (id) => document.getElementById(id);
+  const C = window.SK8_CONFIG, S = window.SK8, el = S.el, $ = (id) => document.getElementById(id);
   $("school").textContent = C.schoolName;
-  $("date").value = new Date().toLocaleDateString("sv-SE");
-  $("key").value = S.store("sk8-admin-key") || "";
+  let KEY = S.store("sk8-admin-key") || "", DB = null;
 
-  // 技のチェック選択
+  const linkFor = (id) => new URL("index.html#s=" + id, location.href).toString();
+  const fmtAt = (s) => String(s || "").slice(5).replace("-", "/");
+  const say = (id, text, kind) => { $(id).className = "status" + (kind ? " " + kind : ""); $(id).textContent = text; };
+  const errText = (e) => e.code === "bad_key" ? "合言葉が違います。" : e.code === "no_gas" ? "config.js に Apps Script のURLが入っていません。" : "通信できませんでした。少し待ってからもう一度お試しください。";
+
+  // 技のチェック
   S.SKILLS.forEach((sk, i) => {
-    const li = document.createElement("li");
-    const n = document.createElement("label"); n.htmlFor = "sk" + i; n.textContent = sk; n.style.margin = "0"; n.style.fontWeight = "500";
-    const sel = document.createElement("select"); sel.id = "sk" + i; sel.dataset.skill = sk; sel.style.width = "auto";
-    sel.innerHTML = '<option value="">—</option><option value="new">はじめて</option><option value="try">練習中</option><option value="done">できた！</option>';
-    li.append(n, sel); $("skillPicker").appendChild(li);
+    const sel = el("select", { id: "sk" + i, "data-skill": sk, style: "width:auto" },
+      el("option", { value: "" }, "—"), ...Object.keys(S.STATUS).map((l) => el("option", { value: l }, l)));
+    $("skillPicker").append(el("li", {}, el("label", { for: "sk" + i, style: "margin:0;font-weight:500" }, sk), sel));
   });
 
-  const fmt = (iso) => iso ? new Date(iso).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+  // ----- データ読み込みと表示 -----
+  async function load() {
+    DB = await S.get({ key: KEY });
+    const counts = {}; DB.entries.forEach((e) => counts[e.student] = (counts[e.student] || 0) + 1);
 
-  $("makeBtn").addEventListener("click", async () => {
-    if (!$("name").value.trim() || !$("feedback").value.trim()) {
-      $("out").hidden = false; $("makeStatus").className = "status err";
-      $("makeStatus").textContent = "生徒さんの名前とフィードバックを入力してください。"; return;
-    }
-    const skills = {};
-    document.querySelectorAll("[data-skill]").forEach((s) => { if (s.value) skills[s.dataset.skill] = s.value; });
-    const data = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-      name: $("name").value.trim(), grade: $("grade").value.trim(),
-      date: $("date").value, time: $("time").value.trim(), count: Number($("count").value) || "",
-      mood: Number($("mood").value) || 0,
-      feedback: $("feedback").value.trim(), good: $("good").value.trim(), next: $("next").value.trim(),
-      home: $("home").value.trim(), notice: $("notice").value.trim(), skills,
-    };
-    const url = new URL("index.html", location.href); url.hash = "d=" + S.encode(data);
-    $("link").value = url.toString(); $("previewBtn").href = url.toString(); $("out").hidden = false;
-    $("makeStatus").className = "status"; $("makeStatus").textContent = "";
-    // 既読管理のため、作成した連絡帳を記録
-    if (C.gasUrl && $("key").value) {
-      S.store("sk8-admin-key", $("key").value);
-      try { await S.post({ type: "entry", key: $("key").value, id: data.id, name: data.name, date: data.date, count: data.count });
-        $("makeStatus").className = "status ok"; $("makeStatus").textContent = "リンクを作成し、既読管理に登録しました。"; }
-      catch (e) { $("makeStatus").className = "status err"; $("makeStatus").textContent = "リンクは作成できましたが、既読管理への登録に失敗しました。"; }
-    } else {
-      $("makeStatus").textContent = "リンクを作成しました。（下の管理キーを入れておくと、未読の連絡帳も一覧に出ます）";
-    }
+    const cur = $("student").value;
+    $("student").replaceChildren(el("option", { value: "" }, "選んでください"),
+      ...DB.students.map((s) => el("option", { value: s.id }, s.name + (s.grade ? "（" + s.grade + "）" : ""))));
+    $("student").value = cur;
+
+    $("studentRows").replaceChildren(...(DB.students.length ? DB.students.map((s) => el("tr", {},
+      el("td", {}, s.name), el("td", {}, String(counts[s.id] || 0)),
+      el("td", {}, el("button", { class: "mini", type: "button", onclick: (ev) => copy(linkFor(s.id), ev.target) }, "リンクをコピー"))))
+      : [el("tr", {}, el("td", { colspan: "3" }, "まだ登録がありません。上のフォームから登録してください。"))]));
+
+    const entries = DB.entries.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt)));
+    $("entryRows").replaceChildren(...(entries.length ? entries.map((e) => el("tr", {},
+      el("td", {}, S.shortDate(e.date)), el("td", {}, e.name), el("td", {}, e.count),
+      el("td", {}, el("span", { class: "pill " + (e.readAt ? "done" : "try") }, e.readAt ? "既読 " + fmtAt(e.readAt) : "未読"))))
+      : [el("tr", {}, el("td", { colspan: "4" }, "まだありません"))]));
+
+    const msgs = DB.messages.slice().reverse();
+    $("msgRows").replaceChildren(...(msgs.length ? msgs.map((m) => el("tr", {},
+      el("td", {}, fmtAt(m.at)), el("td", {}, m.name), el("td", {}, m.from), el("td", { style: "white-space:pre-wrap;min-width:12em" }, m.text)))
+      : [el("tr", {}, el("td", { colspan: "4" }, "メッセージはまだありません"))]));
+  }
+
+  // 生徒を選んだら「何回目」を自動で入れる
+  $("student").addEventListener("change", () => {
+    if (!DB) return;
+    const n = DB.entries.filter((e) => e.student === $("student").value).length;
+    $("count").value = $("student").value ? n + 1 : "";
   });
 
-  $("copyBtn").addEventListener("click", () => {
-    navigator.clipboard.writeText($("link").value)
-      .then(() => { $("makeStatus").className = "status ok"; $("makeStatus").textContent = "コピーしました。"; })
-      .catch(() => { $("link").select(); $("makeStatus").textContent = "選択しました。長押しでコピーしてください。"; });
-  });
+  // ----- ログイン -----
+  async function login() {
+    say("loginStatus", "確認中…");
+    try { await load(); S.store("sk8-admin-key", KEY); $("loginCard").hidden = true; $("app").hidden = false; }
+    catch (e) { say("loginStatus", errText(e), "err"); }
+  }
+  $("key").value = KEY;
+  $("loginForm").addEventListener("submit", (ev) => { ev.preventDefault(); KEY = $("key").value.trim(); login(); });
+  if (KEY) login();
+  $("date").value = new Date().toLocaleDateString("sv-SE");
 
-  $("loadBtn").addEventListener("click", async () => {
-    if (!C.gasUrl) { $("loadStatus").className = "status err"; $("loadStatus").textContent = "config.js に Apps Script のURLを設定してください。"; return; }
-    S.store("sk8-admin-key", $("key").value);
-    $("loadStatus").className = "status"; $("loadStatus").textContent = "読み込み中…";
+  // ----- 連絡帳を保存 -----
+  $("entryForm").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const skills = [...document.querySelectorAll("[data-skill]")].filter((s) => s.value).map((s) => ({ name: s.dataset.skill, label: s.value }));
+    const st = DB.students.find((s) => s.id === $("student").value);
+    $("saveBtn").disabled = true; say("saveStatus", "保存中…");
     try {
-      const res = await fetch(C.gasUrl + "?key=" + encodeURIComponent($("key").value));
-      const j = await res.json();
-      if (!j.ok) throw new Error(j.error || "error");
-      const reads = {}; j.reads.forEach((r) => { (reads[r.id] = reads[r.id] || r); });
-      const entries = j.entries.slice();
-      // 登録されていない連絡帳でも既読があれば表示
-      j.reads.forEach((r) => { if (!entries.some((e) => e.id === r.id)) entries.push(r); });
-      entries.sort((a, b) => String(b.date).localeCompare(String(a.date)));
-      $("entryRows").replaceChildren(...entries.map((e) => {
-        const tr = document.createElement("tr"); const r = reads[e.id];
-        [String(e.date || "").slice(0, 10), e.name, e.count].forEach((v) => { const td = document.createElement("td"); td.textContent = v ?? ""; tr.appendChild(td); });
-        const td = document.createElement("td"); const p = document.createElement("span");
-        p.className = "pill " + (r ? "done" : "new"); p.textContent = r ? "既読 " + fmt(r.at) : "未読"; td.appendChild(p); tr.appendChild(td);
-        return tr;
-      }));
-      const msgs = j.messages.slice().reverse();
-      $("msgRows").replaceChildren(...(msgs.length ? msgs.map((mm) => {
-        const tr = document.createElement("tr");
-        [fmt(mm.at), mm.name, mm.from, mm.text].forEach((v, i) => { const td = document.createElement("td"); td.textContent = v ?? ""; if (i === 3) td.style.whiteSpace = "pre-wrap"; tr.appendChild(td); });
-        return tr;
-      }) : [(() => { const tr = document.createElement("tr"); const td = document.createElement("td"); td.colSpan = 4; td.textContent = "メッセージはまだありません"; tr.appendChild(td); return tr; })()]));
-      $("dash").hidden = false; $("loadStatus").className = "status ok"; $("loadStatus").textContent = "更新しました。";
-    } catch (e) {
-      $("loadStatus").className = "status err";
-      $("loadStatus").textContent = e.message === "bad_key" ? "管理キーが違います。" : "読み込めませんでした。URLと公開設定を確認してください。";
-    }
+      await S.post({ type: "entry", key: KEY, student: st.id, date: $("date").value, time: $("time").value.trim(),
+        count: $("count").value, mood: $("mood").value, feedback: $("feedback").value.trim(), good: $("good").value.trim(),
+        next: $("next").value.trim(), home: $("home").value.trim(), notice: $("notice").value.trim(), skills: S.joinSkills(skills) });
+      say("saveStatus", "保存しました。下の文をLINEで送ってください。", "ok");
+      $("sendText").value = `${st.name}さんの今日の連絡帳が届きました🛹\nいつものリンクからご覧ください。読んだら「読みました」ボタンを押してくださいね。\n${linkFor(st.id)}`;
+      $("sendBox").hidden = false;
+      ["feedback", "good", "next", "home", "notice", "mood"].forEach((id) => $(id).value = "");
+      document.querySelectorAll("[data-skill]").forEach((s) => s.value = "");
+      await load(); $("count").value = "";
+    } catch (e) { say("saveStatus", errText(e), "err"); }
+    finally { $("saveBtn").disabled = false; }
   });
+
+  // ----- 生徒を登録 -----
+  $("studentForm").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const name = $("sName").value.trim();
+    $("addBtn").disabled = true; say("addStatus", "登録中…");
+    try {
+      const r = await S.post({ type: "student", key: KEY, name, grade: $("sGrade").value.trim() });
+      say("addStatus", name + "さんを登録しました。下の文を保護者さまにLINEで送ってください。", "ok");
+      $("welcomeText").value = `${C.schoolName}です。\n${name}さんの「スケボー連絡帳」の専用リンクです。\nレッスンのたびにここに連絡帳が追加され、これまでの記録もすべて見られます。ブックマークやホーム画面への追加がおすすめです。\n${linkFor(r.id)}\n※ご家族以外には共有しないでください。`;
+      $("newStudentBox").hidden = false; $("sName").value = ""; $("sGrade").value = "";
+      await load();
+    } catch (e) { say("addStatus", errText(e), "err"); }
+    finally { $("addBtn").disabled = false; }
+  });
+
+  // ----- コピー -----
+  function copy(text, btn) {
+    const done = () => { const t = btn.textContent; btn.textContent = "コピーしました"; setTimeout(() => btn.textContent = t, 1500); };
+    navigator.clipboard.writeText(text).then(done).catch(() => { window.prompt ? window.prompt("コピーしてください", text) : null; });
+  }
+  document.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => copy($(b.dataset.copy).value, b)));
+  $("reloadBtn").addEventListener("click", async () => { try { await load(); } catch (e) { alert(errText(e)); } });
 })();
 </script>
 </body>

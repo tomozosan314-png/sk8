@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
 <title>スケボー連絡帳</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,49 +17,30 @@
   <div class="band-inner">
     <p class="school" id="school"></p>
     <h1 class="title">スケボー連絡帳</h1>
+    <p class="who" id="who"></p>
   </div>
 </header>
 
 <main class="wrap">
-  <div class="sample-flag" id="sampleFlag" hidden>これは見本です。コーチから届いたリンクを開くと、お子さまの連絡帳が表示されます。</div>
+  <div class="sample-flag" id="flag" hidden></div>
 
-  <section class="card" aria-labelledby="h-lesson">
-    <h2 id="h-lesson"><span class="dot"></span>レッスン記録</h2>
-    <p class="student" id="student"></p>
-    <dl class="meta">
-      <div><dt>日付</dt><dd id="date"></dd></div>
-      <div><dt>時間</dt><dd id="time"></dd></div>
-      <div class="count"><dt>レッスン</dt><dd id="count"></dd></div>
-    </dl>
-    <div class="sub" id="moodWrap"><h3>今日の様子</h3><p><span class="stars" id="mood"></span> <span id="moodText"></span></p></div>
+  <section class="card" id="latestCard" hidden aria-labelledby="h-latest">
+    <h2 id="h-latest"><span class="dot"></span>最新の連絡帳</h2>
+    <div id="latest"></div>
   </section>
 
-  <section class="card" aria-labelledby="h-fb">
-    <h2 id="h-fb"><span class="dot"></span>コーチからのフィードバック</h2>
-    <p class="feedback" id="feedback"></p>
-    <div class="sub" id="goodWrap"><h3>よかったところ・できたこと</h3><p id="good"></p></div>
-    <div class="sub" id="nextWrap"><h3>次回の目標</h3><p id="next"></p></div>
-    <div class="sub" id="homeWrap"><h3>おうちでできる練習</h3><p id="home"></p></div>
+  <section class="card" id="growthCard" hidden aria-labelledby="h-growth">
+    <h2 id="h-growth"><span class="dot"></span>技の成長</h2>
+    <p class="note" style="margin:0 0 10px">これまでの連絡帳から、いちばん新しい状態を表示しています。</p>
+    <ul class="skills" id="growth"></ul>
   </section>
 
-  <section class="card" id="skillsCard" aria-labelledby="h-sk">
-    <h2 id="h-sk"><span class="dot"></span>技のチェック</h2>
-    <ul class="skills" id="skills"></ul>
+  <section class="card" id="historyCard" hidden aria-labelledby="h-history">
+    <h2 id="h-history"><span class="dot"></span>これまでの連絡帳</h2>
+    <div class="history" id="history"></div>
   </section>
 
-  <section class="card" id="noticeCard" aria-labelledby="h-nt">
-    <h2 id="h-nt"><span class="dot"></span>おしらせ・持ち物</h2>
-    <p class="feedback" id="notice"></p>
-  </section>
-
-  <section class="card" aria-labelledby="h-read">
-    <h2 id="h-read"><span class="dot"></span>保護者さま 確認</h2>
-    <p style="margin:0 0 12px">お読みになったら、下のボタンを押してください。コーチに既読が届きます。</p>
-    <button class="btn btn-primary" id="readBtn" type="button"></button>
-    <p class="status" id="readStatus" role="status"></p>
-  </section>
-
-  <section class="card" aria-labelledby="h-msg">
+  <section class="card" id="msgCard" hidden aria-labelledby="h-msg">
     <h2 id="h-msg"><span class="dot"></span>質問・メッセージ</h2>
     <form class="form" id="msgForm">
       <div class="field">
@@ -88,96 +70,140 @@
 
 <script>
 (function () {
-  const C = window.SK8_CONFIG, S = window.SK8, $ = (id) => document.getElementById(id);
+  const C = window.SK8_CONFIG, S = window.SK8, el = S.el, $ = (id) => document.getElementById(id);
   $("school").textContent = C.schoolName;
 
+  const MOODS = ["", "ちょっと疲れ気味", "ふつう", "楽しそう", "元気いっぱい", "絶好調！"];
   const SAMPLE = {
-    id: "sample", name: "そうた", grade: "小学2年", date: "2026-11-08", time: "10:00〜11:00", count: 5, coach: "コーチ",
-    mood: 5,
-    feedback: "今日はオーリーの練習をがんばりました！\n最初は後ろ足を弾くタイミングが早かったけど、何回もチャレンジして、最後は少し板が浮くようになりました。転んでもすぐ立ち上がれて、とてもかっこよかったです。",
-    good: "プッシュがとても安定してきました。目線が前を向いています。",
-    next: "オーリーで前足をしっかり引き上げる",
-    home: "平らな場所で、板に乗ったままひざを曲げ伸ばしする練習（10回×3セット）",
-    skills: { "プッシュ（こぐ）": "done", "ストップ": "done", "ターン（チックタック）": "try", "オーリー": "try" },
-    notice: "次回はヘルメット・ひじ・ひざのプロテクターを忘れずにお持ちください。",
+    student: { id: "sample", name: "そうた", grade: "小学2年" },
+    entries: [
+      { id: "s1", date: "2026-10-25", time: "10:00〜11:00", count: "4", mood: "4",
+        feedback: "プッシュのフォームがきれいになってきました。止まるときに後ろ足をしっかり使えています。",
+        good: "ストップが一人でできるようになりました！", next: "オーリーに挑戦", home: "", notice: "",
+        skills: "プッシュ（こぐ）：できた！／ストップ：できた！／ターン（チックタック）：練習中", readAt: "2026-10-25 19:12" },
+      { id: "s2", date: "2026-11-08", time: "10:00〜11:00", count: "5", mood: "5",
+        feedback: "今日はオーリーの練習をがんばりました！\n最初は後ろ足を弾くタイミングが早かったけど、何回もチャレンジして、最後は少し板が浮くようになりました。転んでもすぐ立ち上がれて、とてもかっこよかったです。",
+        good: "チックタックで方向を変えられるようになりました。", next: "オーリーで前足をしっかり引き上げる",
+        home: "平らな場所で、板に乗ったままひざを曲げ伸ばしする練習（10回×3セット）",
+        notice: "次回はヘルメット・ひじ・ひざのプロテクターを忘れずにお持ちください。",
+        skills: "ターン（チックタック）：できた！／オーリー：練習中", readAt: "" },
+    ],
   };
 
-  let data = SAMPLE, isSample = true;
-  const m = location.hash.match(/^#d=(.+)$/);
-  if (m) { try { data = S.decode(m[1]); isSample = false; } catch (e) { /* 壊れたリンクは見本を表示 */ } }
-  $("sampleFlag").hidden = !isSample;
+  const token = (location.hash.match(/^#s=([0-9a-f]+)$/) || [])[1];
+  let isSample = false, student = null;
 
-  const setText = (id, v) => { $(id).textContent = v || ""; };
-  const showIf = (wrapId, textId, v) => { $(wrapId).hidden = !v; setText(textId, v); };
+  function flag(text) { $("flag").textContent = text; $("flag").hidden = !text; }
 
-  $("student").textContent = (data.name || "") + " さん";
-  if (data.grade) { const s = document.createElement("small"); s.textContent = data.grade; $("student").appendChild(s); }
-  setText("date", S.formatDate(data.date));
-  setText("time", data.time || "—");
-  setText("count", data.count ? data.count + "回目" : "—");
-  const moods = ["", "ちょっと疲れ気味", "ふつう", "楽しそう", "元気いっぱい", "絶好調！"];
-  $("moodWrap").hidden = !data.mood;
-  if (data.mood) { setText("mood", "★".repeat(data.mood) + "☆".repeat(5 - data.mood)); setText("moodText", moods[data.mood]); }
-  setText("feedback", data.feedback);
-  showIf("goodWrap", "good", data.good);
-  showIf("nextWrap", "next", data.next);
-  showIf("homeWrap", "home", data.home);
-  $("noticeCard").hidden = !data.notice; setText("notice", data.notice);
+  // ----- 1回分の連絡帳を組み立てる -----
+  function entryView(e) {
+    const box = el("div", { class: "entry" });
+    box.append(
+      el("dl", { class: "meta" },
+        el("div", {}, el("dt", {}, "日付"), el("dd", {}, S.formatDate(e.date))),
+        el("div", {}, el("dt", {}, "時間"), el("dd", {}, e.time || "—")),
+        el("div", { class: "count" }, el("dt", {}, "レッスン"), el("dd", {}, e.count ? e.count + "回目" : "—"))),
+    );
+    const mood = Number(e.mood);
+    if (mood >= 1 && mood <= 5) box.append(el("div", { class: "sub" }, el("h3", {}, "今日の様子"),
+      el("p", {}, el("span", { class: "stars", "aria-label": "5段階中" + mood }, "★".repeat(mood) + "☆".repeat(5 - mood)), " " + MOODS[mood])));
+    box.append(el("div", { class: "sub" }, el("h3", {}, "コーチからのフィードバック"), el("p", { class: "feedback" }, e.feedback || "")));
+    [["よかったところ・できたこと", e.good], ["次回の目標", e.next], ["おうちでできる練習", e.home], ["おしらせ・持ち物", e.notice]]
+      .forEach(([h, v]) => { if (v) box.append(el("div", { class: "sub" }, el("h3", {}, h), el("p", {}, v))); });
+    const sk = S.parseSkills(e.skills);
+    if (sk.length) box.append(el("div", { class: "sub" }, el("h3", {}, "技のチェック"),
+      el("ul", { class: "skills" }, sk.map((s) => el("li", {}, el("span", {}, s.name), el("span", { class: "pill " + s.cls }, s.label))))));
 
-  const sk = Object.entries(data.skills || {});
-  $("skillsCard").hidden = !sk.length;
-  sk.forEach(([name, st]) => {
-    const info = S.SKILL_STATUS[st]; if (!info) return;
-    const li = document.createElement("li");
-    const n = document.createElement("span"); n.textContent = name;
-    const p = document.createElement("span"); p.className = "pill " + info.cls; p.textContent = info.label;
-    li.append(n, p); $("skills").appendChild(li);
-  });
-
-  // 既読ボタン
-  const readKey = "sk8-read-" + data.id;
-  function renderRead(at) {
-    const b = $("readBtn");
-    if (at) { b.className = "btn btn-ok"; b.innerHTML = S.ICONS.check + "<span>既読をお送りしました</span>"; b.disabled = true;
-      $("readStatus").textContent = new Date(at).toLocaleString("ja-JP") + " に確認済み"; $("readStatus").className = "status ok"; }
-    else { b.className = "btn btn-primary"; b.innerHTML = S.ICONS.check + "<span>読みました</span>"; b.disabled = false; }
+    // 既読ボタン
+    const btn = el("button", { class: "btn", type: "button" });
+    const st = el("p", { class: "status", role: "status" });
+    const setRead = (at) => {
+      btn.className = at ? "btn btn-ok" : "btn btn-primary"; btn.disabled = !!at;
+      btn.innerHTML = S.ICONS.check + (at ? "<span>既読をお送りしました</span>" : "<span>読みました</span>");
+      st.className = "status ok"; st.textContent = at ? at + " に確認済み" : "";
+    };
+    setRead(e.readAt);
+    btn.addEventListener("click", async () => {
+      if (isSample) { st.className = "status"; st.textContent = "見本のため送信されません。"; return; }
+      btn.disabled = true; st.className = "status"; st.textContent = "送信中…";
+      try { const r = await S.post({ type: "read", s: token, entry: e.id }); e.readAt = r.readAt; setRead(r.readAt); renderHistoryBadges(); }
+      catch (err) { btn.disabled = false; st.className = "status err"; st.textContent = "送信できませんでした。電波の良い場所でもう一度押してください。"; }
+    });
+    box.append(el("div", { class: "sub read-box" }, el("p", { class: "note", style: "margin:0 0 8px" }, "お読みになったら押してください。コーチに既読が届きます。"), btn, st));
+    return box;
   }
-  renderRead(S.store(readKey));
-  $("readBtn").addEventListener("click", async () => {
-    if (isSample) { $("readStatus").textContent = "見本のため送信されません。"; return; }
-    $("readBtn").disabled = true; $("readStatus").textContent = "送信中…"; $("readStatus").className = "status";
-    try {
-      await S.post({ type: "read", id: data.id, name: data.name, date: data.date, count: data.count });
-      const at = new Date().toISOString(); S.store(readKey, at); renderRead(at);
-    } catch (e) {
-      $("readBtn").disabled = false; $("readStatus").className = "status err";
-      $("readStatus").textContent = e.message === "no_gas"
-        ? "まだ送信の設定がされていません。お手数ですが公式LINEで「読みました」とお送りください。"
-        : "送信できませんでした。電波の良い場所でもう一度押してください。";
-    }
-  });
 
-  // メッセージ
+  let entries = [];
+  function renderHistoryBadges() {
+    document.querySelectorAll("[data-badge]").forEach((b) => {
+      const e = entries.find((x) => x.id === b.dataset.badge);
+      b.className = "pill " + (e.readAt ? "done" : "try"); b.textContent = e.readAt ? "既読" : "未読";
+    });
+  }
+
+  function render(data) {
+    student = data.student;
+    entries = data.entries.slice().sort((a, b) => (String(a.date) + a.count).localeCompare(String(b.date) + b.count));
+    $("who").textContent = student.name + " さん" + (student.grade ? "（" + student.grade + "）" : "") + "　レッスン " + entries.length + "回分の記録";
+    $("msgCard").hidden = false;
+
+    if (!entries.length) { flag("まだ連絡帳はありません。レッスン後にコーチが書いたら、ここに表示されます。"); return; }
+    const latest = entries[entries.length - 1];
+    $("latest").replaceChildren(entryView(latest)); $("latestCard").hidden = false;
+
+    // 技の成長：古い順に上書きして、最新の状態を残す
+    const g = new Map();
+    entries.forEach((e) => S.parseSkills(e.skills).forEach((s) => g.set(s.name, s)));
+    $("growthCard").hidden = !g.size;
+    $("growth").replaceChildren(...[...g.values()].map((s) => el("li", {}, el("span", {}, s.name), el("span", { class: "pill " + s.cls }, s.label))));
+
+    const past = entries.slice(0, -1).reverse();
+    $("historyCard").hidden = !past.length;
+    $("history").replaceChildren(...past.map((e) => {
+      const d = el("details", {},
+        el("summary", {},
+          el("span", { class: "h-count" }, (e.count || "?") + "回目"),
+          el("span", { class: "h-date" }, S.formatDate(e.date)),
+          el("span", { class: "pill", "data-badge": e.id })));
+      let built = false;
+      d.addEventListener("toggle", () => { if (d.open && !built) { d.append(entryView(e)); built = true; } });
+      return d;
+    }));
+    renderHistoryBadges();
+  }
+
+  // ----- 読み込み -----
+  async function load() {
+    if (!token) { isSample = true; flag("これは見本です。コーチから届いた専用リンクを開くと、お子さまの連絡帳が表示されます。"); render(SAMPLE); return; }
+    flag("読み込み中…");
+    try { const d = await S.get({ s: token }); flag(""); render(d); }
+    catch (e) {
+      flag(e.code === "not_found" ? "リンクが正しくないようです。コーチから届いたリンクをもう一度開いてください。"
+        : e.code === "no_gas" ? "まだ準備中です。しばらくお待ちください。"
+        : "読み込めませんでした。電波の良い場所で、ページを開き直してください。");
+    }
+  }
+  load();
+
+  // ----- メッセージ -----
   $("msgName").value = S.store("sk8-parent-name") || "";
   $("msgForm").addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const text = $("msgText").value.trim(); if (!text) return;
-    if (isSample) { $("msgStatus").textContent = "見本のため送信されません。"; return; }
-    $("msgBtn").disabled = true; $("msgStatus").textContent = "送信中…"; $("msgStatus").className = "status";
+    if (isSample) { $("msgStatus").className = "status"; $("msgStatus").textContent = "見本のため送信されません。"; return; }
+    $("msgBtn").disabled = true; $("msgStatus").className = "status"; $("msgStatus").textContent = "送信中…";
     try {
-      await S.post({ type: "message", id: data.id, name: data.name, date: data.date, count: data.count, from: $("msgName").value.trim(), text });
+      const latest = entries[entries.length - 1];
+      await S.post({ type: "message", s: token, entry: latest ? latest.id : "", from: $("msgName").value.trim(), text });
       S.store("sk8-parent-name", $("msgName").value.trim());
       $("msgText").value = ""; $("msgStatus").className = "status ok";
-      $("msgStatus").textContent = "送信しました。コーチからの返事は公式LINEなどでお送りします。";
+      $("msgStatus").textContent = "送信しました。コーチからのお返事は公式LINEなどでお送りします。";
     } catch (e) {
-      $("msgStatus").className = "status err";
-      $("msgStatus").textContent = e.message === "no_gas"
-        ? "まだ送信の設定がされていません。お手数ですが公式LINEからお送りください。"
-        : "送信できませんでした。もう一度お試しください。";
+      $("msgStatus").className = "status err"; $("msgStatus").textContent = "送信できませんでした。お手数ですが公式LINEからお送りください。";
     } finally { $("msgBtn").disabled = false; }
   });
 
-  // リンクボタン
+  // ----- リンク -----
   const r = $("reserveBtn");
   if (C.reserveUrl) { r.href = C.reserveUrl; r.innerHTML = S.ICONS.calendar + "<span>次回の予約をする</span>"; }
   else { r.removeAttribute("href"); r.setAttribute("aria-disabled", "true"); r.innerHTML = S.ICONS.calendar + "<span>次回の予約（準備中）</span>"; }
