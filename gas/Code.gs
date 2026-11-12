@@ -19,7 +19,7 @@ const SHEETS = {
     name: "連絡帳",
     head: ["連絡帳ID", "生徒ID", "名前", "日付", "時間", "何回目", "今日の様子(1-5)",
            "フィードバック", "よかったところ", "次回の目標", "おうちでできる練習",
-           "おしらせ・持ち物", "技のチェック", "既読日時", "作成日時"],
+           "おしらせ・持ち物", "既読日時", "作成日時"],
   },
   messages: {
     name: "メッセージ",
@@ -56,8 +56,8 @@ function out_(obj) { return ContentService.createTextOutput(JSON.stringify(obj))
 function entryObj_(r) {
   return {
     id: r[0], student: r[1], name: r[2], date: r[3], time: r[4], count: r[5], mood: r[6],
-    feedback: r[7], good: r[8], next: r[9], home: r[10], notice: r[11], skills: r[12],
-    readAt: r[13], createdAt: r[14],
+    feedback: r[7], good: r[8], next: r[9], home: r[10], notice: r[11],
+    readAt: r[12], createdAt: r[13],
   };
 }
 function findStudent_(id) {
@@ -113,7 +113,7 @@ function doPost(e) {
       const id = newId_().slice(0, 12);
       sheet_("entries").appendRow([
         id, st.id, st.name, s_(p.date, 20), s_(p.time, 30), s_(p.count, 5), s_(p.mood, 1),
-        s_(p.feedback), s_(p.good), s_(p.next, 300), s_(p.home), s_(p.notice), s_(p.skills, 500),
+        s_(p.feedback), s_(p.good), s_(p.next, 300), s_(p.home), s_(p.notice),
         "", now_(),
       ]);
       return out_({ ok: true, id: id });
@@ -123,8 +123,8 @@ function doPost(e) {
     if (p.type === "read") {
       const hit = rows_("entries").find(x => x.r[0] === p.entry && x.r[1] === p.s);
       if (!hit) return out_({ ok: false, error: "not_found" });
-      const at = hit.r[13] || now_();
-      if (!hit.r[13]) sheet_("entries").getRange(hit.row, 14).setValue(at);
+      const at = hit.r[12] || now_();
+      if (!hit.r[12]) sheet_("entries").getRange(hit.row, 13).setValue(at);
       return out_({ ok: true, readAt: at });
     }
 

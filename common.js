@@ -1,18 +1,5 @@
 // 共通の処理（スプレッドシートとのやりとりなど）
 (function () {
-  const SKILLS = [
-    "プッシュ（こぐ）", "ストップ", "ターン（チックタック）", "キックターン",
-    "オーリー", "ドロップイン", "マニュアル", "ランプ（ポンピング）",
-  ];
-  // スプレッドシートには「オーリー：練習中／ドロップイン：できた！」の形で保存します
-  const STATUS = { "はじめて": "new", "練習中": "try", "できた！": "done" };
-
-  function parseSkills(text) {
-    return String(text || "").split("／").map((s) => s.split("：")).filter((a) => a[0] && a[1])
-      .map(([name, label]) => ({ name: name.trim(), label: label.trim(), cls: STATUS[label.trim()] || "new" }));
-  }
-  function joinSkills(list) { return list.map((s) => s.name + "：" + s.label).join("／"); }
-
   function gasUrl() {
     const u = (window.SK8_CONFIG || {}).gasUrl;
     if (!u) throw Object.assign(new Error("no_gas"), { code: "no_gas" });
@@ -72,5 +59,5 @@
     check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>',
   };
 
-  window.SK8 = { SKILLS, STATUS, parseSkills, joinSkills, get, post, formatDate, shortDate, store, el, ICONS };
+  window.SK8 = { get, post, formatDate, shortDate, store, el, ICONS };
 })();

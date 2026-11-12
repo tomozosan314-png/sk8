@@ -29,11 +29,6 @@
     <div id="latest"></div>
   </section>
 
-  <section class="card" id="growthCard" hidden aria-labelledby="h-growth">
-    <h2 id="h-growth"><span class="dot"></span>技の成長</h2>
-    <p class="note" style="margin:0 0 10px">これまでの連絡帳から、いちばん新しい状態を表示しています。</p>
-    <ul class="skills" id="growth"></ul>
-  </section>
 
   <section class="card" id="historyCard" hidden aria-labelledby="h-history">
     <h2 id="h-history"><span class="dot"></span>これまでの連絡帳</h2>
@@ -79,14 +74,12 @@
     entries: [
       { id: "s1", date: "2026-10-25", time: "10:00〜11:00", count: "4", mood: "4",
         feedback: "プッシュのフォームがきれいになってきました。止まるときに後ろ足をしっかり使えています。",
-        good: "ストップが一人でできるようになりました！", next: "オーリーに挑戦", home: "", notice: "",
-        skills: "プッシュ（こぐ）：できた！／ストップ：できた！／ターン（チックタック）：練習中", readAt: "2026-10-25 19:12" },
+        good: "ストップが一人でできるようになりました！", next: "オーリーに挑戦", home: "", notice: "", readAt: "2026-10-25 19:12" },
       { id: "s2", date: "2026-11-08", time: "10:00〜11:00", count: "5", mood: "5",
         feedback: "今日はオーリーの練習をがんばりました！\n最初は後ろ足を弾くタイミングが早かったけど、何回もチャレンジして、最後は少し板が浮くようになりました。転んでもすぐ立ち上がれて、とてもかっこよかったです。",
         good: "チックタックで方向を変えられるようになりました。", next: "オーリーで前足をしっかり引き上げる",
         home: "平らな場所で、板に乗ったままひざを曲げ伸ばしする練習（10回×3セット）",
-        notice: "次回はヘルメット・ひじ・ひざのプロテクターを忘れずにお持ちください。",
-        skills: "ターン（チックタック）：できた！／オーリー：練習中", readAt: "" },
+        notice: "次回はヘルメット・ひじ・ひざのプロテクターを忘れずにお持ちください。", readAt: "" },
     ],
   };
 
@@ -106,13 +99,10 @@
     );
     const mood = Number(e.mood);
     if (mood >= 1 && mood <= 5) box.append(el("div", { class: "sub" }, el("h3", {}, "今日の様子"),
-      el("p", {}, el("span", { class: "stars", "aria-label": "5段階中" + mood }, "★".repeat(mood) + "☆".repeat(5 - mood)), " " + MOODS[mood])));
+      el("p", {}, MOODS[mood])));
     box.append(el("div", { class: "sub" }, el("h3", {}, "コーチからのフィードバック"), el("p", { class: "feedback" }, e.feedback || "")));
     [["よかったところ・できたこと", e.good], ["次回の目標", e.next], ["おうちでできる練習", e.home], ["おしらせ・持ち物", e.notice]]
       .forEach(([h, v]) => { if (v) box.append(el("div", { class: "sub" }, el("h3", {}, h), el("p", {}, v))); });
-    const sk = S.parseSkills(e.skills);
-    if (sk.length) box.append(el("div", { class: "sub" }, el("h3", {}, "技のチェック"),
-      el("ul", { class: "skills" }, sk.map((s) => el("li", {}, el("span", {}, s.name), el("span", { class: "pill " + s.cls }, s.label))))));
 
     // 既読ボタン
     const btn = el("button", { class: "btn", type: "button" });
@@ -150,12 +140,6 @@
     if (!entries.length) { flag("まだ連絡帳はありません。レッスン後にコーチが書いたら、ここに表示されます。"); return; }
     const latest = entries[entries.length - 1];
     $("latest").replaceChildren(entryView(latest)); $("latestCard").hidden = false;
-
-    // 技の成長：古い順に上書きして、最新の状態を残す
-    const g = new Map();
-    entries.forEach((e) => S.parseSkills(e.skills).forEach((s) => g.set(s.name, s)));
-    $("growthCard").hidden = !g.size;
-    $("growth").replaceChildren(...[...g.values()].map((s) => el("li", {}, el("span", {}, s.name), el("span", { class: "pill " + s.cls }, s.label))));
 
     const past = entries.slice(0, -1).reverse();
     $("historyCard").hidden = !past.length;
