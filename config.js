@@ -5,7 +5,7 @@ window.SK8_CONFIG = {
 
   // Google Apps Script のウェブアプリURL（README の手順で作成して貼り付け）
   // 空のままだと、既読・メッセージは送信されません（画面に案内が出ます）
-  gasUrl: "",
+  gasUrl: "https://script.google.com/macros/s/AKfycbwuoPzG5tof-1zsP1DRAecai75I8_4K080gjLtOkYrskahnXVwFbS6USatnACRYOW4P/exec",
 
   // 次回予約のリンク（後で貼り付け）。空のままだと「準備中」表示になります
   reserveUrl: "",
