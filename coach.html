@@ -42,17 +42,6 @@
           <div class="field"><label for="time">時間</label><input type="text" id="time" placeholder="10:00〜11:00"></div>
           <div class="field"><label for="count">何回目</label><input type="number" id="count" min="1"></div>
         </div>
-        <div class="field">
-          <label for="mood">今日の様子</label>
-          <select id="mood">
-            <option value="">（表示しない）</option>
-            <option value="5">絶好調！</option>
-            <option value="4">元気いっぱい</option>
-            <option value="3">楽しそう</option>
-            <option value="2">ふつう</option>
-            <option value="1">ちょっと疲れ気味</option>
-          </select>
-        </div>
         <div class="field"><label for="feedback">コーチからのフィードバック</label><textarea id="feedback" required style="min-height:160px" placeholder="今日の練習の様子や、がんばったことを書いてください"></textarea></div>
         <div class="field"><label for="good">よかったところ・できたこと（任意）</label><textarea id="good"></textarea></div>
         <div class="field"><label for="next">次回の目標（任意）</label><input type="text" id="next"></div>
@@ -162,12 +151,12 @@
     $("saveBtn").disabled = true; say("saveStatus", "保存中…");
     try {
       await S.post({ type: "entry", key: KEY, student: st.id, date: $("date").value, time: $("time").value.trim(),
-        count: $("count").value, mood: $("mood").value, feedback: $("feedback").value.trim(), good: $("good").value.trim(),
+        count: $("count").value, feedback: $("feedback").value.trim(), good: $("good").value.trim(),
         next: $("next").value.trim(), home: $("home").value.trim(), notice: $("notice").value.trim() });
       say("saveStatus", "保存しました。下の文をLINEで送ってください。", "ok");
       $("sendText").value = `${st.name}さんの今日の連絡帳が届きました🛹\nいつものリンクからご覧ください。読んだら「読みました」ボタンを押してくださいね。\n${linkFor(st.id)}`;
       $("sendBox").hidden = false;
-      ["feedback", "good", "next", "home", "notice", "mood"].forEach((id) => $(id).value = "");
+      ["feedback", "good", "next", "home", "notice"].forEach((id) => $(id).value = "");
       await load(); $("count").value = "";
     } catch (e) { say("saveStatus", errText(e), "err"); }
     finally { $("saveBtn").disabled = false; }

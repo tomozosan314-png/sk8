@@ -68,14 +68,13 @@
   const C = window.SK8_CONFIG, S = window.SK8, el = S.el, $ = (id) => document.getElementById(id);
   $("school").textContent = C.schoolName;
 
-  const MOODS = ["", "ちょっと疲れ気味", "ふつう", "楽しそう", "元気いっぱい", "絶好調！"];
   const SAMPLE = {
     student: { id: "sample", name: "そうた", grade: "小学2年" },
     entries: [
-      { id: "s1", date: "2026-10-25", time: "10:00〜11:00", count: "4", mood: "4",
+      { id: "s1", date: "2026-10-25", time: "10:00〜11:00", count: "4",
         feedback: "プッシュのフォームがきれいになってきました。止まるときに後ろ足をしっかり使えています。",
         good: "ストップが一人でできるようになりました！", next: "オーリーに挑戦", home: "", notice: "", readAt: "2026-10-25 19:12" },
-      { id: "s2", date: "2026-11-08", time: "10:00〜11:00", count: "5", mood: "5",
+      { id: "s2", date: "2026-11-08", time: "10:00〜11:00", count: "5",
         feedback: "今日はオーリーの練習をがんばりました！\n最初は後ろ足を弾くタイミングが早かったけど、何回もチャレンジして、最後は少し板が浮くようになりました。転んでもすぐ立ち上がれて、とてもかっこよかったです。",
         good: "チックタックで方向を変えられるようになりました。", next: "オーリーで前足をしっかり引き上げる",
         home: "平らな場所で、板に乗ったままひざを曲げ伸ばしする練習（10回×3セット）",
@@ -97,9 +96,6 @@
         el("div", {}, el("dt", {}, "時間"), el("dd", {}, e.time || "—")),
         el("div", { class: "count" }, el("dt", {}, "レッスン"), el("dd", {}, e.count ? e.count + "回目" : "—"))),
     );
-    const mood = Number(e.mood);
-    if (mood >= 1 && mood <= 5) box.append(el("div", { class: "sub" }, el("h3", {}, "今日の様子"),
-      el("p", {}, MOODS[mood])));
     box.append(el("div", { class: "sub" }, el("h3", {}, "コーチからのフィードバック"), el("p", { class: "feedback" }, e.feedback || "")));
     [["よかったところ・できたこと", e.good], ["次回の目標", e.next], ["おうちでできる練習", e.home], ["おしらせ・持ち物", e.notice]]
       .forEach(([h, v]) => { if (v) box.append(el("div", { class: "sub" }, el("h3", {}, h), el("p", {}, v))); });
@@ -109,7 +105,7 @@
     const st = el("p", { class: "status", role: "status" });
     const setRead = (at) => {
       btn.className = at ? "btn btn-ok" : "btn btn-primary"; btn.disabled = !!at;
-      btn.innerHTML = S.ICONS.check + (at ? "<span>既読をお送りしました</span>" : "<span>読みました</span>");
+      btn.innerHTML = S.ICONS.check + (at ? "<span>確認しました</span>" : "<span>読みました</span>");
       st.className = "status ok"; st.textContent = at ? at + " に確認済み" : "";
     };
     setRead(e.readAt);
