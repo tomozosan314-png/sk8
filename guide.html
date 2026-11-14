@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>スケボー連絡帳の使い方</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+<style>
+  /* 手順は本当に順番があるので、番号を大きく見せる */
+  .step-head { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; }
+  .step-no {
+    flex: none; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--accent); color: var(--accent-ink);
+    font-family: var(--display); font-size: 20px; display: grid; place-items: center;
+  }
+  .step-head h2 { margin: 0; }
+  .card p { margin: 0 0 10px; }
+  .card p:last-child { margin-bottom: 0; }
+  ol.how, ul.how { margin: 0 0 10px; padding-left: 1.4em; display: grid; gap: 6px; }
+  /* 実際の画面に似せた見本 */
+  .mock {
+    border: 2px dashed var(--line); border-radius: 12px; padding: 14px;
+    margin: 12px 0; display: grid; gap: 10px; background: var(--bg);
+  }
+  .mock-label { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin: 0; }
+  .mock .btn { pointer-events: none; min-height: 46px; }
+  .mock-row {
+    display: flex; align-items: center; gap: 12px; border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 12px; background: var(--paper);
+  }
+  .mock-row .n { font-family: var(--display); color: var(--accent); }
+  .mock-row .d { color: var(--muted); font-size: 14px; flex: 1; }
+  .arrow { text-align: center; color: var(--muted); font-size: 14px; margin: 0; }
+  .tip {
+    background: var(--paper); border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0;
+    padding: 10px 14px; font-size: 14px; margin-top: 12px;
+  }
+  .phone-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 8px; }
+  .phone-split > div { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+  .phone-split h3 { font-size: 15px; margin: 0 0 6px; }
+  .phone-split ol { margin: 0; padding-left: 1.3em; font-size: 15px; }
+  .qa dt { font-weight: 700; margin-top: 14px; }
+  .qa dt:first-child { margin-top: 0; }
+  .qa dt::before { content: "Q. "; color: var(--accent); }
+  .qa dd { margin: 4px 0 0; }
+  .qa dd::before { content: "A. "; font-weight: 700; }
+  kbd {
+    font-family: inherit; font-weight: 700; border: 1px solid var(--line); border-bottom-width: 2px;
+    border-radius: 6px; padding: 0 6px; background: var(--paper); white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="band-inner">
+    <p class="school" id="school"></p>
+    <h1 class="title">スケボー連絡帳の使い方</h1>
+    <p class="who">保護者さま向けのご案内です</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <p>レッスンのあと、コーチがお子さまの様子を「連絡帳」に書いてお届けします。スマホでかんたんに見られて、これまでの記録もすべて残ります。</p>
+    <p>アプリのインストールや登録はいりません。届いたリンクを開くだけで使えます。</p>
+  </section>
+
+  <section class="card" aria-labelledby="s1">
+    <div class="step-head"><span class="step-no">1</span><h2 id="s1">専用リンクを開く</h2></div>
+    <p>公式LINEで、お子さま専用のリンクが届きます。タップすると連絡帳が開きます。</p>
+    <p><strong>リンクは毎回同じです。</strong>新しい連絡帳が届いたら、同じリンクを開くと最新のものが表示されます。</p>
+    <div class="tip">リンクはお子さま専用です。ご家族以外には共有しないでください。ごきょうだいで通われている場合は、お一人ずつ別のリンクになります。</div>
+  </section>
+
+  <section class="card" aria-labelledby="s2">
+    <div class="step-head"><span class="step-no">2</span><h2 id="s2">ホーム画面に追加する（おすすめ）</h2></div>
+    <p>ホーム画面に追加しておくと、次からアプリのようにワンタップで開けます。</p>
+    <p>LINEの中で開いた場合は、まず右上の <kbd>⋯</kbd> や <kbd>︙</kbd> から「ブラウザで開く」を選んでください。</p>
+    <div class="phone-split">
+      <div>
+        <h3>iPhone（Safari）</h3>
+        <ol>
+          <li>画面下の共有ボタン <kbd>⬆</kbd> をタップ</li>
+          <li>「ホーム画面に追加」をタップ</li>
+          <li>右上の「追加」をタップ</li>
+        </ol>
+      </div>
+      <div>
+        <h3>Android（Chrome）</h3>
+        <ol>
+          <li>右上の <kbd>︙</kbd> をタップ</li>
+          <li>「ホーム画面に追加」をタップ</li>
+          <li>「追加」をタップ</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="s3">
+    <div class="step-head"><span class="step-no">3</span><h2 id="s3">連絡帳を読む</h2></div>
+    <p>いちばん上に「<strong>最新の連絡帳</strong>」が表示されます。日付、何回目のレッスンか、コーチからのフィードバックが書いてあります。</p>
+    <p>前の連絡帳は、その下の「<strong>これまでの連絡帳</strong>」にあります。<kbd>＋</kbd> をタップすると開きます。</p>
+    <div class="mock" aria-hidden="true">
+      <p class="mock-label">画面の見本：これまでの連絡帳</p>
+      <div class="mock-row"><span class="n">4回目</span><span class="d">10/24（土）</span><span class="pill done">既読</span><span>＋</span></div>
+      <div class="mock-row"><span class="n">3回目</span><span class="d">10/17（土）</span><span class="pill try">未読</span><span>＋</span></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="s4">
+    <div class="step-head"><span class="step-no">4</span><h2 id="s4">読んだら「読みました」を押す</h2></div>
+    <p>連絡帳の下にあるオレンジのボタンを押してください。コーチに「読みました」とお知らせが届きます。</p>
+    <div class="mock" aria-hidden="true">
+      <p class="mock-label">画面の見本</p>
+      <span class="btn btn-primary">✓ 読みました</span>
+      <p class="arrow">押すと ↓ に変わります</p>
+      <span class="btn btn-ok">✓ 確認しました</span>
+    </div>
+    <p>「確認しました」に変われば完了です。1回押せば大丈夫です。</p>
+  </section>
+
+  <section class="card" aria-labelledby="s5">
+    <div class="step-head"><span class="step-no">5</span><h2 id="s5">質問・メッセージを送る</h2></div>
+    <p>聞きたいことやご連絡があるときは、ページ下の「<strong>質問・メッセージ</strong>」から送れます。</p>
+    <ol class="how">
+      <li>「お名前」に、お名前を入れる（例：山田（母））</li>
+      <li>「内容」に、質問やご連絡を書く</li>
+      <li>「メッセージを送る」をタップ</li>
+    </ol>
+    <p>「送信しました」と出れば届いています。コーチからのお返事は、公式LINEなどでお送りします。</p>
+    <div class="tip">お休みや遅刻など急ぎのご連絡は、公式LINEに直接お送りください。</div>
+  </section>
+
+  <section class="card" aria-labelledby="s6">
+    <div class="step-head"><span class="step-no">6</span><h2 id="s6">次回の予約・SNS</h2></div>
+    <p>ページのいちばん下に、3つのボタンがあります。</p>
+    <ul class="how">
+      <li><strong>次回の予約をする</strong>：次のレッスンの予約ページが開きます</li>
+      <li><strong>Instagram</strong>：スクールの様子をご覧いただけます</li>
+      <li><strong>公式LINE</strong>：スクールの公式LINEが開きます</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="faq">
+    <h2 id="faq"><span class="dot"></span>こまったときは</h2>
+    <dl class="qa">
+      <dt>「リンクが正しくないようです」と出る</dt>
+      <dd>リンクの一部が欠けている可能性があります。LINEに届いたリンクを、もう一度タップしてください。それでも開けないときは公式LINEでご連絡ください。</dd>
+      <dt>「読み込めませんでした」と出る</dt>
+      <dd>電波の良い場所で、ページを開き直してください。</dd>
+      <dt>新しい連絡帳が表示されない</dt>
+      <dd>ページを下に引っぱって更新するか、一度閉じてから開き直してください。</dd>
+      <dt>「読みました」を押したか忘れた</dt>
+      <dd>押してあれば、ボタンが緑の「確認しました」になっています。オレンジのままなら、もう一度押してください。</dd>
+      <dt>リンクをなくした</dt>
+      <dd>公式LINEでお知らせください。同じリンクをもう一度お送りします。</dd>
+    </dl>
+  </section>
+
+  <section class="card" aria-labelledby="contact">
+    <h2 id="contact"><span class="dot"></span>お問い合わせ</h2>
+    <p>わからないことがあれば、いつでも公式LINEからご連絡ください。</p>
+    <a class="btn btn-line" id="lineBtn" target="_blank" rel="noopener">公式LINEを開く</a>
+  </section>
+</main>
+
+<script>
+  (function () {
+    var C = window.SK8_CONFIG || {};
+    document.getElementById("school").textContent = C.schoolName || "";
+    if (C.lineUrl) document.getElementById("lineBtn").href = C.lineUrl;
+  })();
+</script>
+</body>
+</html>

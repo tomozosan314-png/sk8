@@ -193,7 +193,7 @@
     try {
       const r = await S.post({ type: "student", key: KEY, name, grade: $("sGrade").value.trim() });
       say("addStatus", name + "さんを登録しました。下の文を保護者さまにLINEで送ってください。", "ok");
-      $("welcomeText").value = `${C.schoolName}です。\n${name}さんの「スケボー連絡帳」の専用リンクです。\nレッスンのたびにここに連絡帳が追加され、これまでの記録もすべて見られます。ブックマークやホーム画面への追加がおすすめです。\n${linkFor(r.id)}\n※ご家族以外には共有しないでください。`;
+      $("welcomeText").value = `${C.schoolName}です。\n${name}さんの「スケボー連絡帳」の専用リンクです。\nレッスンのたびにここに連絡帳が追加され、これまでの記録もすべて見られます。ブックマークやホーム画面への追加がおすすめです。\n${linkFor(r.id)}\n※ご家族以外には共有しないでください。\n\n使い方はこちら\n${new URL("guide.html", location.href)}`;
       $("newStudentBox").hidden = false; $("sName").value = ""; $("sGrade").value = "";
       await load();
     } catch (e) { say("addStatus", errText(e), "err"); }
