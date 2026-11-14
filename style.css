@@ -90,7 +90,7 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .card h2 .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex: none; }
 
 /* Lesson meta: date / time / count */
-.meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .meta div { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; min-width: 0; }
 .meta dt { font-size: 12px; color: var(--muted); letter-spacing: .06em; }
 .meta dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }

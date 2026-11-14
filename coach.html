@@ -39,7 +39,6 @@
         <div class="field"><label for="student">生徒さん</label><select id="student" required></select></div>
         <div class="grid2">
           <div class="field"><label for="date">日付</label><input type="date" id="date" required></div>
-          <div class="field"><label for="time">時間</label><input type="text" id="time" placeholder="10:00〜11:00"></div>
           <div class="field"><label for="count">何回目</label><input type="number" id="count" min="1"></div>
         </div>
         <div class="field"><label for="feedback">コーチからのフィードバック</label><textarea id="feedback" required style="min-height:160px" placeholder="今日の練習の様子や、がんばったことを書いてください"></textarea></div>
@@ -151,7 +150,7 @@
     const st = DB.students.find((s) => s.id === $("student").value);
     $("saveBtn").disabled = true; say("saveStatus", "保存中…");
     try {
-      await S.post({ type: "entry", key: KEY, student: st.id, date: $("date").value, time: $("time").value.trim(),
+      await S.post({ type: "entry", key: KEY, student: st.id, date: $("date").value,
         count: $("count").value, feedback: $("feedback").value.trim(), good: $("good").value.trim(),
         next: $("next").value.trim(), home: $("home").value.trim(), notice: $("notice").value.trim() });
       say("saveStatus", "保存しました。下の文をLINEで送ってください。", "ok");
