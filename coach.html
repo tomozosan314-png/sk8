@@ -136,13 +136,35 @@
   // ----- ログイン -----
   async function login() {
     say("loginStatus", "確認中…");
-    try { await load(); S.store("sk8-admin-key", KEY); $("loginCard").hidden = true; $("app").hidden = false; }
+    try { await load(); S.store("sk8-admin-key", KEY); $("loginCard").hidden = true; $("app").hidden = false; restoreDraft(); }
     catch (e) { say("loginStatus", errText(e), "err"); }
   }
   $("key").value = KEY;
   $("loginForm").addEventListener("submit", (ev) => { ev.preventDefault(); KEY = $("key").value.trim(); login(); });
   if (KEY) login();
   $("date").value = new Date().toLocaleDateString("sv-SE");
+
+  // ----- 書きかけを守る -----
+  // 1行の入力欄で改行（Enter）を押しても保存されないようにする
+  $("entryForm").addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter" && ev.target.tagName === "INPUT") ev.preventDefault();
+  });
+  // 書いている内容をこの端末に下書き保存（アプリを切り替えて画面が読み込み直されても戻せるように）
+  const DRAFT_FIELDS = ["student", "date", "count", "feedback", "good", "next", "home", "notice"];
+  const DRAFT_KEY = "sk8-entry-draft";
+  function saveDraft() {
+    const d = {}; DRAFT_FIELDS.forEach((id) => d[id] = $(id).value);
+    S.store(DRAFT_KEY, JSON.stringify(d));
+  }
+  function clearDraft() { S.store(DRAFT_KEY, ""); }
+  function restoreDraft() {
+    let d = null; try { d = JSON.parse(S.store(DRAFT_KEY) || "null"); } catch (e) {}
+    if (!d || !(d.feedback || d.good || d.next || d.home || d.notice)) return;
+    DRAFT_FIELDS.forEach((id) => { if (d[id] != null) $(id).value = d[id]; });
+    say("saveStatus", "書きかけの内容を戻しました。まだ保存されていません。", "ok");
+  }
+  $("entryForm").addEventListener("input", saveDraft);
+  $("entryForm").addEventListener("change", saveDraft);
 
   // ----- 連絡帳を保存 -----
   $("entryForm").addEventListener("submit", async (ev) => {
@@ -157,6 +179,7 @@
       $("sendText").value = `${st.name}さんの今日の連絡帳が届きました🛹\nいつものリンクからご覧ください。読んだら「読みました」ボタンを押してくださいね。\n${linkFor(st.id)}`;
       $("sendBox").hidden = false;
       ["feedback", "good", "next", "home", "notice"].forEach((id) => $(id).value = "");
+      clearDraft();
       await load(); $("count").value = "";
     } catch (e) { say("saveStatus", errText(e), "err"); }
     finally { $("saveBtn").disabled = false; }
