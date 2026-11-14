@@ -7,6 +7,8 @@
   --line: #d6dbd5;
   --accent: #ff6a2b;      /* wheel orange */
   --accent-ink: #ffffff;
+  --accent-text: #c2410c;  /* 白地でも読める濃いオレンジ（文字用） */
+  --panel: #f4f6f3;        /* 本文を入れる枠 */
   --grip: #232826;        /* grip tape */
   --grip-ink: #f3f5f2;
   --ok: #1f8a55;
@@ -28,6 +30,8 @@
     --line: #353c38;
     --accent: #ff7a40;
     --accent-ink: #1a0d06;
+    --accent-text: #ff9a66;
+    --panel: #2a302d;
     --grip: #0e1110;
     --grip-ink: #eef1ee;
     --ok: #5fd39a;
@@ -99,12 +103,17 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .student small { font-size: 14px; color: var(--muted); font-weight: 500; margin-left: 6px; }
 
 .feedback { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
-.sub { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.sub { margin-top: 18px; }
 .sub h3 {
-  font-size: 15px; font-weight: 700; color: var(--ink); margin: 0 0 6px; letter-spacing: .04em;
+  font-size: 15px; font-weight: 700; color: var(--accent-text); margin: 0 0 8px; letter-spacing: .04em;
   display: flex; align-items: center; gap: 8px;
 }
-.sub h3::before { content: ""; width: 4px; height: 1.1em; border-radius: 2px; background: var(--accent); flex: none; }
+.sub h3::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+/* 本文は枠の中に入れて、タイトルと分ける */
+.sub h3 + p {
+  background: var(--panel); border-radius: 10px; padding: 12px 14px;
+  border: 1px solid var(--line);
+}
 .sub p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .pill { font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
@@ -164,6 +173,7 @@ th { color: var(--muted); font-weight: 700; white-space: nowrap; }
 .who { margin: 8px 0 0; font-weight: 700; font-size: 15px; }
 .label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
 .tbl-h { margin: 20px 0 6px; font-size: 15px; }
+.read-box { border-top: 1px dashed var(--line); padding-top: 16px; }
 .read-box .btn { margin-top: 4px; }
 
 /* これまでの連絡帳（開閉式） */
