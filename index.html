@@ -165,7 +165,6 @@
   load();
 
   // ----- メッセージ -----
-  $("msgName").value = S.store("sk8-parent-name") || "";
   $("msgForm").addEventListener("submit", async (ev) => {
     ev.preventDefault();
     const text = $("msgText").value.trim(); if (!text) return;
@@ -174,7 +173,6 @@
     try {
       const latest = entries[entries.length - 1];
       await S.post({ type: "message", s: token, entry: latest ? latest.id : "", from: $("msgName").value.trim(), text });
-      S.store("sk8-parent-name", $("msgName").value.trim());
       $("msgText").value = ""; $("msgStatus").className = "status ok";
       $("msgStatus").textContent = "送信しました。コーチからのお返事は公式LINEなどでお送りします。";
     } catch (e) {
