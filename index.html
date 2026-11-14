@@ -40,7 +40,7 @@
     <form class="form" id="msgForm">
       <div class="field">
         <label for="msgName">お名前（保護者さま）</label>
-        <input type="text" id="msgName" autocomplete="name" placeholder="例：山田（母）">
+        <input type="text" id="msgName" name="parent-name-input" autocomplete="off" placeholder="例：山田（母）">
       </div>
       <div class="field">
         <label for="msgText">内容</label>
@@ -180,6 +180,10 @@
       $("msgStatus").className = "status err"; $("msgStatus").textContent = "送信できませんでした。お手数ですが公式LINEからお送りください。";
     } finally { $("msgBtn").disabled = false; }
   });
+
+  // 以前のしくみでこの端末に覚えていた名前を消す
+  try { localStorage.removeItem("sk8-parent-name"); } catch (e) {}
+  $("msgName").value = "";
 
   // ----- リンク -----
   const r = $("reserveBtn");

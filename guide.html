@@ -139,7 +139,7 @@
     <div class="step-head"><span class="step-no">6</span><h2 id="s6">次回の予約・SNS</h2></div>
     <p>ページのいちばん下に、3つのボタンがあります。</p>
     <ul class="how">
-      <li><strong>次回の予約をする</strong>：次のレッスンの予約ページが開きます</li>
+      <li id="reserveItem"><strong>次回の予約</strong>：現在<strong>準備中</strong>です。準備ができしだい、このボタンから予約できるようになります。それまでは公式LINEからご連絡ください。</li>
       <li><strong>Instagram</strong>：スクールの様子をご覧いただけます</li>
       <li><strong>公式LINE</strong>：スクールの公式LINEが開きます</li>
     </ul>
@@ -173,6 +173,7 @@
     var C = window.SK8_CONFIG || {};
     document.getElementById("school").textContent = C.schoolName || "";
     if (C.lineUrl) document.getElementById("lineBtn").href = C.lineUrl;
+    if (C.reserveUrl) document.getElementById("reserveItem").innerHTML = "<strong>次回の予約をする</strong>：次のレッスンの予約ページが開きます";
   })();
 </script>
 </body>
