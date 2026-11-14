@@ -126,11 +126,12 @@
       : [el("tr", {}, el("td", { colspan: "4" }, "メッセージはまだありません"))]));
   }
 
-  // 生徒を選んだら「何回目」を自動で入れる
+  // 生徒を選んだら「何回目」を自動で入れる（前回の回数＋1。初めてなら1）
   $("student").addEventListener("change", () => {
     if (!DB) return;
-    const n = DB.entries.filter((e) => e.student === $("student").value).length;
-    $("count").value = $("student").value ? n + 1 : "";
+    const counts = DB.entries.filter((e) => e.student === $("student").value)
+      .map((e) => parseInt(e.count, 10)).filter((n) => n > 0);
+    $("count").value = $("student").value ? (counts.length ? Math.max(...counts) : 0) + 1 : "";
   });
 
   // ----- ログイン -----
