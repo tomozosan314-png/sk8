@@ -8,7 +8,13 @@
  *   生徒       … 生徒さんの一覧と、保護者さま用の専用ID
  *   連絡帳     … 書いた連絡帳がすべて残ります（ここで直接修正してもOK）
  *   メッセージ … 保護者さまからの質問・連絡
+ *
+ * 保護者さまからメッセージが届くと、このスプレッドシートの持ち主のGmailに通知メールが届きます。
+ * 別のアドレスに送りたいときは、スクリプト プロパティに NOTIFY_EMAIL を追加してください。
  */
+
+// コーチ用ページのURL（通知メールに載せます）
+const COACH_URL = "https://tomozosan314-png.github.io/sk8/coach.html";
 
 const SHEETS = {
   students: {
@@ -64,6 +70,43 @@ function findStudent_(id) {
   if (!id) return null;
   const hit = rows_("students").find(x => x.r[0] === id);
   return hit ? { id: hit.r[0], name: hit.r[1], grade: hit.r[2] } : null;
+}
+
+// ---------- 通知メール ----------
+function notifyEmail_() {
+  return PropertiesService.getScriptProperties().getProperty("NOTIFY_EMAIL")
+      || Session.getEffectiveUser().getEmail();
+}
+function notifyMessage_(studentName, from, text) {
+  try {
+    const to = notifyEmail_();
+    if (!to) return;
+    MailApp.sendEmail({
+      to: to,
+      subject: "【スケボー連絡帳】" + studentName + "さんの保護者さまからメッセージ",
+      body: [
+        studentName + "さんの保護者さまから、メッセージが届きました。",
+        "",
+        "差出人：" + (from || "（お名前なし）"),
+        "受信日時：" + now_(),
+        "",
+        "―――― 内容 ――――",
+        text,
+        "――――――――――――",
+        "",
+        "コーチ用ページ：" + COACH_URL,
+        "スプレッドシート：" + SpreadsheetApp.getActiveSpreadsheet().getUrl(),
+      ].join("\n"),
+    });
+  } catch (err) {
+    // 通知に失敗しても、メッセージの保存はそのまま成功させる
+    console.error(err);
+  }
+}
+
+// Apps Script の画面で一度だけ実行して、通知メールの許可とテストをするための関数
+function testNotify() {
+  notifyMessage_("テスト", "スケボー連絡帳", "これはテストです。このメールが届けば、通知の設定は完了です。");
 }
 
 // ---------- 読み出し ----------
@@ -133,6 +176,7 @@ function doPost(e) {
       const st = findStudent_(p.s);
       if (!st) return out_({ ok: false, error: "not_found" });
       sheet_("messages").appendRow([now_(), st.id, st.name, s_(p.entry, 20), s_(p.from, 50), s_(p.text, 2000)]);
+      notifyMessage_(st.name, s_(p.from, 50), s_(p.text, 2000));
       return out_({ ok: true });
     }
 
