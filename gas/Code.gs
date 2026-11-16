@@ -9,6 +9,9 @@
  *   連絡帳     … 書いた連絡帳がすべて残ります（ここで直接修正してもOK）
  *   メッセージ … 保護者さまからの質問・連絡
  *
+ * 各シートは1行目の見出し（「何回目」「既読日時」など）を見て読み書きします。
+ * 列を削除したり並べ替えたりしても動きますが、見出しの文字は変えないでください。
+ *
  * 保護者さまからメッセージが届くと、このスプレッドシートの持ち主のGmailに通知メールが届きます。
  * 別のアドレスに送りたいときは、スクリプト プロパティに NOTIFY_EMAIL を追加してください。
  */
@@ -16,6 +19,7 @@
 // コーチ用ページのURL（通知メールに載せます）
 const COACH_URL = "https://tomozosan314-png.github.io/sk8/coach.html";
 
+// 新しくシートを作るときの見出し
 const SHEETS = {
   students: {
     name: "生徒",
@@ -23,7 +27,7 @@ const SHEETS = {
   },
   entries: {
     name: "連絡帳",
-    head: ["連絡帳ID", "生徒ID", "名前", "日付", "時間", "何回目",
+    head: ["連絡帳ID", "生徒ID", "名前", "日付", "何回目",
            "フィードバック", "よかったところ", "次回の目標", "おうちでできる練習",
            "おしらせ・持ち物", "既読日時", "作成日時"],
   },
@@ -48,28 +52,52 @@ function sheet_(key) {
   }
   return sh;
 }
-function rows_(key) {
-  const v = sheet_(key).getDataRange().getDisplayValues();
-  return v.slice(1).map((r, i) => ({ r: r, row: i + 2 }));
+
+// シートを読み込み、見出しの名前で各行の値を取り出せる形にする
+function table_(key) {
+  const sh = sheet_(key);
+  const v = sh.getDataRange().getDisplayValues();
+  const head = (v[0] || []).map(h => String(h).trim());
+  const col = {};
+  head.forEach((h, i) => { if (h && col[h] === undefined) col[h] = i; });
+  const rows = v.slice(1).map((r, i) => {
+    const o = { _row: i + 2 };
+    Object.keys(col).forEach(h => { o[h] = r[col[h]]; });
+    return o;
+  });
+  return { sh: sh, head: head, col: col, rows: rows };
 }
+
+// 見出しの名前で値を指定して1行追加（シートにない見出しの値は捨てる）
+function append_(key, values) {
+  const t = table_(key);
+  t.sh.appendRow(t.head.map(h => (values[h] === undefined ? "" : values[h])));
+}
+
 function adminKey_() { return PropertiesService.getScriptProperties().getProperty("ADMIN_KEY") || ""; }
 function isAdmin_(k) { return !!adminKey_() && k === adminKey_(); }
 function s_(v, n) { return String(v == null ? "" : v).slice(0, n || 3000); }
 function now_() { return Utilities.formatDate(new Date(), "Asia/Tokyo", "yyyy-MM-dd HH:mm"); }
 function newId_() { return Utilities.getUuid().replace(/-/g, ""); }
 function out_(obj) { return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON); }
+function v_(x) { return x === undefined ? "" : x; }
 
-function entryObj_(r) {
+function entryObj_(o) {
   return {
-    id: r[0], student: r[1], name: r[2], date: r[3], time: r[4], count: r[5],
-    feedback: r[6], good: r[7], next: r[8], home: r[9], notice: r[10],
-    readAt: r[11], createdAt: r[12],
+    id: v_(o["連絡帳ID"]), student: v_(o["生徒ID"]), name: v_(o["名前"]),
+    date: v_(o["日付"]), count: v_(o["何回目"]),
+    feedback: v_(o["フィードバック"]), good: v_(o["よかったところ"]), next: v_(o["次回の目標"]),
+    home: v_(o["おうちでできる練習"]), notice: v_(o["おしらせ・持ち物"]),
+    readAt: v_(o["既読日時"]), createdAt: v_(o["作成日時"]),
   };
+}
+function studentObj_(o) {
+  return { id: v_(o["生徒ID"]), name: v_(o["名前"]), grade: v_(o["学年・年齢"]), createdAt: v_(o["登録日"]) };
 }
 function findStudent_(id) {
   if (!id) return null;
-  const hit = rows_("students").find(x => x.r[0] === id);
-  return hit ? { id: hit.r[0], name: hit.r[1], grade: hit.r[2] } : null;
+  const hit = table_("students").rows.find(o => o["生徒ID"] === id);
+  return hit ? studentObj_(hit) : null;
 }
 
 // ---------- 通知メール ----------
@@ -117,17 +145,20 @@ function doGet(e) {
   if (p.s) {
     const st = findStudent_(p.s);
     if (!st) return out_({ ok: false, error: "not_found" });
-    const entries = rows_("entries").map(x => entryObj_(x.r)).filter(x => x.student === st.id);
-    return out_({ ok: true, student: st, entries: entries });
+    const entries = table_("entries").rows.map(entryObj_).filter(x => x.student === st.id);
+    return out_({ ok: true, student: { id: st.id, name: st.name, grade: st.grade }, entries: entries });
   }
 
   // コーチ：全部
   if (isAdmin_(p.key)) {
     return out_({
       ok: true,
-      students: rows_("students").map(x => ({ id: x.r[0], name: x.r[1], grade: x.r[2], createdAt: x.r[3] })),
-      entries: rows_("entries").map(x => entryObj_(x.r)),
-      messages: rows_("messages").map(x => ({ at: x.r[0], student: x.r[1], name: x.r[2], entry: x.r[3], from: x.r[4], text: x.r[5] })),
+      students: table_("students").rows.map(studentObj_),
+      entries: table_("entries").rows.map(entryObj_),
+      messages: table_("messages").rows.map(o => ({
+        at: v_(o["受信日時"]), student: v_(o["生徒ID"]), name: v_(o["名前"]),
+        entry: v_(o["連絡帳ID"]), from: v_(o["差出人"]), text: v_(o["内容"]),
+      })),
     });
   }
   return out_({ ok: false, error: "bad_key" });
@@ -144,7 +175,7 @@ function doPost(e) {
     if (p.type === "student") {
       if (!isAdmin_(p.key)) return out_({ ok: false, error: "bad_key" });
       const id = newId_();
-      sheet_("students").appendRow([id, s_(p.name, 50), s_(p.grade, 30), now_()]);
+      append_("students", { "生徒ID": id, "名前": s_(p.name, 50), "学年・年齢": s_(p.grade, 30), "登録日": now_() });
       return out_({ ok: true, id: id });
     }
 
@@ -154,20 +185,25 @@ function doPost(e) {
       const st = findStudent_(p.student);
       if (!st) return out_({ ok: false, error: "not_found" });
       const id = newId_().slice(0, 12);
-      sheet_("entries").appendRow([
-        id, st.id, st.name, s_(p.date, 20), s_(p.time, 30), s_(p.count, 5),
-        s_(p.feedback), s_(p.good), s_(p.next, 300), s_(p.home), s_(p.notice),
-        "", now_(),
-      ]);
+      append_("entries", {
+        "連絡帳ID": id, "生徒ID": st.id, "名前": st.name,
+        "日付": s_(p.date, 20), "何回目": s_(p.count, 5),
+        "フィードバック": s_(p.feedback), "よかったところ": s_(p.good), "次回の目標": s_(p.next, 300),
+        "おうちでできる練習": s_(p.home), "おしらせ・持ち物": s_(p.notice),
+        "既読日時": "", "作成日時": now_(),
+      });
       return out_({ ok: true, id: id });
     }
 
     // 保護者さま：既読
     if (p.type === "read") {
-      const hit = rows_("entries").find(x => x.r[0] === p.entry && x.r[1] === p.s);
+      const t = table_("entries");
+      const c = t.col["既読日時"];
+      if (c === undefined) return out_({ ok: false, error: "no_read_column" });
+      const hit = t.rows.find(o => o["連絡帳ID"] === p.entry && o["生徒ID"] === p.s);
       if (!hit) return out_({ ok: false, error: "not_found" });
-      const at = hit.r[11] || now_();
-      if (!hit.r[11]) sheet_("entries").getRange(hit.row, 12).setValue(at);
+      const at = hit["既読日時"] || now_();
+      if (!hit["既読日時"]) t.sh.getRange(hit._row, c + 1).setValue(at);
       return out_({ ok: true, readAt: at });
     }
 
@@ -175,7 +211,10 @@ function doPost(e) {
     if (p.type === "message") {
       const st = findStudent_(p.s);
       if (!st) return out_({ ok: false, error: "not_found" });
-      sheet_("messages").appendRow([now_(), st.id, st.name, s_(p.entry, 20), s_(p.from, 50), s_(p.text, 2000)]);
+      append_("messages", {
+        "受信日時": now_(), "生徒ID": st.id, "名前": st.name,
+        "連絡帳ID": s_(p.entry, 20), "差出人": s_(p.from, 50), "内容": s_(p.text, 2000),
+      });
       notifyMessage_(st.name, s_(p.from, 50), s_(p.text, 2000));
       return out_({ ok: true });
     }
