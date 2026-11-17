@@ -89,13 +89,19 @@
 
   function flag(text) { $("flag").textContent = text; $("flag").hidden = !text; }
 
+  // 「何回目」は数字のときだけ表示（スプレッドシートの列がずれても長い文章が出ないように）
+  function countText(c, empty) {
+    const n = String(c == null ? "" : c).trim();
+    return /^[0-9０-９]{1,4}$/.test(n) ? n + "回目" : empty;
+  }
+
   // ----- 1回分の連絡帳を組み立てる -----
   function entryView(e) {
     const box = el("div", { class: "entry" });
     box.append(
       el("dl", { class: "meta" },
         el("div", {}, el("dt", {}, "日付"), el("dd", {}, S.formatDate(e.date))),
-        el("div", { class: "count" }, el("dt", {}, "レッスン"), el("dd", {}, e.count ? e.count + "回目" : "—"))),
+        el("div", { class: "count" }, el("dt", {}, "レッスン"), el("dd", {}, countText(e.count, "—")))),
     );
     box.append(el("div", { class: "sub" }, el("h3", {}, "コーチからのフィードバック"), el("p", { class: "feedback" }, e.feedback || "")));
     [["よかったところ・できたこと", e.good], ["次回の目標", e.next], ["おうちでできる練習", e.home], ["おしらせ・持ち物", e.notice]]
@@ -143,7 +149,7 @@
     $("history").replaceChildren(...past.map((e) => {
       const d = el("details", {},
         el("summary", {},
-          el("span", { class: "h-count" }, (e.count || "?") + "回目"),
+          el("span", { class: "h-count" }, countText(e.count, "")),
           el("span", { class: "h-date" }, S.formatDate(e.date)),
           el("span", { class: "pill", "data-badge": e.id })));
       let built = false;
