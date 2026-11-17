@@ -32,6 +32,7 @@
   </section>
 
   <div id="app" hidden class="wrap-inner">
+    <div class="sample-flag" id="gasWarn" hidden role="alert"></div>
     <!-- 連絡帳を書く -->
     <section class="card">
       <h2><span class="dot"></span>連絡帳を書く</h2>
@@ -101,6 +102,12 @@
   // ----- データ読み込みと表示 -----
   async function load() {
     DB = await S.get({ key: KEY });
+    // 古い Apps Script は連絡帳ごとに "time" を返す。新しいものは返さない
+    const old = DB.entries.some((e) => Object.prototype.hasOwnProperty.call(e, "time"));
+    $("gasWarn").hidden = !old;
+    $("gasWarn").textContent = old
+      ? "【要対応】Apps Script が古いプログラムのまま動いています。そのため、保護者さまのページで「何回目」やフィードバックの表示がずれたり、既読が記録されなかったりします。Apps Script に新しいコードを貼り付けて保存し、「デプロイ」→「デプロイを管理」→ 鉛筆マーク →「新バージョン」→「デプロイ」をしてください。"
+      : "";
     const counts = {}; DB.entries.forEach((e) => counts[e.student] = (counts[e.student] || 0) + 1);
 
     const cur = $("student").value;
