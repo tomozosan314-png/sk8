@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Apps Script コード</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  #code {
+    width: 100%; min-height: 260px; font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 12px; line-height: 1.5; white-space: pre; overflow: auto;
+  }
+  ol.how { margin: 0; padding-left: 1.4em; display: grid; gap: 8px; }
+  kbd {
+    font-family: inherit; font-weight: 700; border: 1px solid var(--line); border-bottom-width: 2px;
+    border-radius: 6px; padding: 0 6px; background: var(--paper); white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="band-inner">
+    <p class="school">コーチ用</p>
+    <h1 class="title">Apps Script のコード</h1>
+    <p class="who" id="ver"></p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <h2><span class="dot"></span>1. コードをコピー</h2>
+    <button class="btn btn-primary" id="copyBtn" type="button" disabled>読み込み中…</button>
+    <p class="status" id="copyStatus" role="status"></p>
+    <textarea id="code" readonly aria-label="Apps Script のコード"></textarea>
+  </section>
+
+  <section class="card">
+    <h2><span class="dot"></span>2. Apps Script に貼り付けて保存</h2>
+    <ol class="how">
+      <li>Apps Script のコードの中を1回クリック</li>
+      <li><kbd>Ctrl</kbd> + <kbd>A</kbd>（Mac は <kbd>⌘</kbd> + <kbd>A</kbd>）で全部選ぶ</li>
+      <li><kbd>Delete</kbd> で消す</li>
+      <li><kbd>Ctrl</kbd> + <kbd>V</kbd>（Mac は <kbd>⌘</kbd> + <kbd>V</kbd>）で貼り付け</li>
+      <li><kbd>Ctrl</kbd> + <kbd>S</kbd>（Mac は <kbd>⌘</kbd> + <kbd>S</kbd>）か 💾 で保存</li>
+      <li><strong>確認</strong>：12行目あたりに「各シートは1行目の見出し」と書いてあればOK</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2><span class="dot"></span>3. 公開し直す</h2>
+    <ol class="how">
+      <li>上の関数の選択欄で <strong>testNotify</strong> を選んで「▶ 実行」（初回は許可の画面が出ます。テストメールが届けばOK）</li>
+      <li>「デプロイ」→「デプロイを管理」→ 鉛筆マーク ✏️</li>
+      <li>「バージョン」で <strong>新バージョン</strong> を選んで「デプロイ」</li>
+      <li>コーチ用ページを開き直して、黄色い警告が消えていれば完了</li>
+    </ol>
+  </section>
+</main>
+
+<script>
+(async function () {
+  const $ = (id) => document.getElementById(id);
+  try {
+    const res = await fetch("gas/Code.gs?t=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    const text = await res.text();
+    $("code").value = text;
+    $("copyBtn").disabled = false;
+    $("copyBtn").textContent = "コードを全部コピー";
+    $("ver").textContent = text.split("\n").length + "行";
+  } catch (e) {
+    $("copyBtn").textContent = "読み込めませんでした";
+    $("copyStatus").className = "status err";
+    $("copyStatus").textContent = "ページを開き直してください。";
+  }
+  $("copyBtn").addEventListener("click", () => {
+    const text = $("code").value;
+    navigator.clipboard.writeText(text).then(() => {
+      $("copyStatus").className = "status ok";
+      $("copyStatus").textContent = "コピーしました。Apps Script に貼り付けてください。";
+    }).catch(() => {
+      $("code").focus(); $("code").select();
+      $("copyStatus").className = "status";
+      $("copyStatus").textContent = "下の枠のコードを全部選びました。右クリック（長押し）→「コピー」してください。";
+    });
+  });
+})();
+</script>
+</body>
+</html>
