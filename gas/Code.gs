@@ -33,7 +33,7 @@ const SHEETS = {
   },
   messages: {
     name: "メッセージ",
-    head: ["受信日時", "生徒ID", "名前", "連絡帳ID", "差出人", "内容"],
+    head: ["受信日時", "生徒ID", "名前", "連絡帳ID", "差出人", "内容", "通知"],
   },
 };
 
@@ -66,6 +66,12 @@ function table_(key) {
     return o;
   });
   return { sh: sh, head: head, col: col, rows: rows };
+}
+
+// 見出しが無ければ、いちばん右に足す（前からあるシートに新しい項目を増やすため）
+function ensureHeader_(key, name) {
+  const t = table_(key);
+  if (t.col[name] === undefined) t.sh.getRange(1, t.head.length + 1).setValue(name);
 }
 
 // 見出しの名前で値を指定して1行追加（シートにない見出しの値は捨てる）
@@ -106,9 +112,10 @@ function notifyEmail_() {
       || Session.getEffectiveUser().getEmail();
 }
 function notifyMessage_(studentName, from, text) {
+  // 戻り値：送れたら "送信済み (宛先)"、送れなかったら "失敗: 理由"
   try {
     const to = notifyEmail_();
-    if (!to) return;
+    if (!to) return "失敗: 送り先のメールアドレスがわかりません";
     MailApp.sendEmail({
       to: to,
       subject: "【スケボー連絡帳】" + studentName + "さんの保護者さまからメッセージ",
@@ -126,15 +133,20 @@ function notifyMessage_(studentName, from, text) {
         "スプレッドシート：" + SpreadsheetApp.getActiveSpreadsheet().getUrl(),
       ].join("\n"),
     });
+    return "送信済み (" + to + ")";
   } catch (err) {
     // 通知に失敗しても、メッセージの保存はそのまま成功させる
     console.error(err);
+    return "失敗: " + String(err && err.message || err).slice(0, 200);
   }
 }
 
-// Apps Script の画面で一度だけ実行して、通知メールの許可とテストをするための関数
+// Apps Script の画面で実行して、通知メールの許可とテストをするための関数
+// 失敗したときは、画面下に赤い文字で理由が出ます
 function testNotify() {
-  notifyMessage_("テスト", "スケボー連絡帳", "これはテストです。このメールが届けば、通知の設定は完了です。");
+  const result = notifyMessage_("テスト", "スケボー連絡帳", "これはテストです。このメールが届けば、通知の設定は完了です。");
+  console.log(result);
+  if (result.indexOf("失敗") === 0) throw new Error(result);
 }
 
 // ---------- 読み出し ----------
@@ -211,11 +223,13 @@ function doPost(e) {
     if (p.type === "message") {
       const st = findStudent_(p.s);
       if (!st) return out_({ ok: false, error: "not_found" });
+      ensureHeader_("messages", "通知");
+      const notified = notifyMessage_(st.name, s_(p.from, 50), s_(p.text, 2000));
       append_("messages", {
         "受信日時": now_(), "生徒ID": st.id, "名前": st.name,
         "連絡帳ID": s_(p.entry, 20), "差出人": s_(p.from, 50), "内容": s_(p.text, 2000),
+        "通知": notified,
       });
-      notifyMessage_(st.name, s_(p.from, 50), s_(p.text, 2000));
       return out_({ ok: true });
     }
 
