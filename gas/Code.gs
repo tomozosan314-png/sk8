@@ -144,6 +144,10 @@ function notifyMessage_(studentName, from, text) {
 // Apps Script の画面で実行して、通知メールの許可とテストをするための関数
 // 失敗したときは、画面下に赤い文字で理由が出ます
 function testNotify() {
+  // 足りない許可（メールの送信など）があれば、ここで許可の画面を出す
+  if (typeof ScriptApp !== "undefined" && ScriptApp.requireAllScopes) {
+    ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL);
+  }
   const result = notifyMessage_("テスト", "スケボー連絡帳", "これはテストです。このメールが届けば、通知の設定は完了です。");
   console.log(result);
   if (result.indexOf("失敗") === 0) throw new Error(result);
