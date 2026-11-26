@@ -3,7 +3,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
-/* Layout: one narrow column — next lesson up top, form, then the month-by-month list */
+/* Layout: one column — next lesson, month calendar, selected day's lessons, then the add form */
 :root {
   --bg: #e9ebe8;        /* concrete */
   --surface: #f7f8f6;
@@ -11,6 +11,7 @@
   --muted: #5d6662;
   --line: #cfd4d0;
   --accent: #0f6b5c;    /* park-bench teal */
+  --accent-soft: #d3e7e2;
   --accent-fg: #ffffff;
   --tape: #ffd23f;      /* grip-tape warning yellow */
   --tape-fg: #2a2300;
@@ -20,73 +21,98 @@
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #161a19; --surface: #202624; --fg: #e8ece9; --muted: #9aa5a0; --line: #333b38;
-  --accent: #4fc2aa; --accent-fg: #0b1a17; --tape: #f2c530; --tape-fg: #221c00; --danger: #ff8a80; color-scheme: dark } }
+  --accent: #4fc2aa; --accent-soft: #1d3a34; --accent-fg: #0b1a17; --tape: #f2c530; --tape-fg: #221c00; --danger: #ff8a80; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #161a19; --surface: #202624; --fg: #e8ece9; --muted: #9aa5a0; --line: #333b38;
-  --accent: #4fc2aa; --accent-fg: #0b1a17; --tape: #f2c530; --tape-fg: #221c00; --danger: #ff8a80; color-scheme: dark }
+  --accent: #4fc2aa; --accent-soft: #1d3a34; --accent-fg: #0b1a17; --tape: #f2c530; --tape-fg: #221c00; --danger: #ff8a80; color-scheme: dark }
 
 body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.6; }
-.wrap { max-width: 640px; margin: 0 auto; padding-block: 24px 64px;
+.wrap { max-width: 760px; margin: 0 auto; padding-block: 24px 64px;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-  display: flex; flex-direction: column; gap: 24px; }
+  display: flex; flex-direction: column; gap: 20px; }
 h1 { font-family: var(--f-display); font-weight: 400; font-size: 1.7rem; line-height: 1.2; margin: 0; text-wrap: balance; }
 h2 { font-family: var(--f-display); font-weight: 400; font-size: 1.05rem; margin: 0; letter-spacing: .02em; }
 .sub { color: var(--muted); margin: 4px 0 0; font-size: .9rem; }
 
-.next { background: var(--tape); color: var(--tape-fg); border-radius: 14px; padding: 18px 20px; display: grid; gap: 4px; }
+.next { background: var(--tape); color: var(--tape-fg); border-radius: 14px; padding: 16px 20px; display: grid; gap: 2px; }
 .next .label { font-size: .75rem; font-weight: 700; letter-spacing: .12em; }
-.next .when { font-family: var(--f-display); font-size: 1.5rem; line-height: 1.25; }
+.next .when { font-family: var(--f-display); font-size: 1.4rem; line-height: 1.3; }
 .next .meta { font-weight: 500; }
 
-.status { font-size: .85rem; color: var(--muted); }
+.status { font-size: .85rem; color: var(--muted); margin: 0; }
 .status.err { color: var(--danger); }
 
+/* Calendar */
+.cal { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 8px; }
+.calhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.calhead h2 { font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+.nav { display: flex; gap: 6px; }
+.grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.dow { text-align: center; font-size: .72rem; font-weight: 700; color: var(--muted); padding: 2px 0; }
+.dow.sat, .day.sat .num { color: var(--accent); }
+.dow.sun, .day.sun .num { color: var(--danger); }
+.day { min-height: 76px; min-width: 0; border-radius: 8px; border: 1px solid transparent; background: transparent; color: var(--fg);
+  padding: 4px; display: flex; flex-direction: column; gap: 2px; align-items: stretch; text-align: left; font-weight: 400; cursor: pointer; }
+.day:hover { border-color: var(--line); }
+.day.other { opacity: .35; }
+.day.sel { border-color: var(--accent); background: var(--accent-soft); }
+.num { font-size: .8rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.4; }
+.day.today .num { background: var(--fg); color: var(--bg); border-radius: 999px; width: 1.6em; text-align: center; }
+.ev { font-size: .68rem; line-height: 1.3; background: var(--accent); color: var(--accent-fg); border-radius: 4px; padding: 1px 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev.mini { background: var(--tape); color: var(--tape-fg); }
+.more { font-size: .65rem; color: var(--muted); }
+@media (max-width: 480px) {
+  .day { min-height: 58px; padding: 3px 2px; }
+  .ev { font-size: .6rem; padding: 0 2px; }
+}
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: .75rem; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; background: var(--accent); }
+.legend .lm::before { background: var(--tape); }
+
+/* Selected day */
+.dayview { display: grid; gap: 8px; }
+ul { list-style: none; margin: 0; padding: 0; display: grid; }
+li.item { padding: 12px 0; border-bottom: 1px solid var(--line); display: grid; gap: 2px; min-width: 0; }
+.top { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.time { font-weight: 700; font-variant-numeric: tabular-nums; }
+.name { font-weight: 700; overflow-wrap: anywhere; }
+.chip { font-size: .75rem; font-weight: 700; padding: 1px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.chip.need { background: var(--tape); border-color: var(--tape); color: var(--tape-fg); }
+.note { color: var(--muted); font-size: .88rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.tools { display: flex; gap: 12px; margin-top: 4px; flex-wrap: wrap; align-items: center; }
+.link { background: none; border: none; padding: 2px 0; color: var(--accent); font-size: .82rem; font-weight: 700; border-radius: 4px; }
+.link.del { color: var(--danger); }
+.confirm { font-size: .82rem; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.empty { color: var(--muted); font-size: .9rem; margin: 0; }
+
+/* Form */
 form { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 420px) { .row { grid-template-columns: 1fr; } }
-label { display: grid; gap: 4px; font-size: .8rem; font-weight: 700; color: var(--muted); min-width: 0; }
-input, select, textarea { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; width: 100%; box-sizing: border-box; }
+label, .fieldset-label { display: grid; gap: 4px; font-size: .8rem; font-weight: 700; color: var(--muted); min-width: 0; }
+input, textarea { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; width: 100%; box-sizing: border-box; }
 textarea { min-height: 56px; resize: vertical; }
-input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+fieldset { border: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+legend { padding: 0; font-size: .8rem; font-weight: 700; color: var(--muted); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; width: max-content; }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.seg label { display: block; padding: 7px 18px; cursor: pointer; color: var(--fg); font-size: .9rem; }
+.seg input:checked + label { background: var(--accent); color: var(--accent-fg); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: -2px; }
+input:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
 button { font: inherit; font-weight: 700; border-radius: 999px; padding: 9px 18px; border: 1px solid transparent; cursor: pointer; }
 .primary { background: var(--accent); color: var(--accent-fg); }
 .ghost { background: transparent; color: var(--fg); border-color: var(--line); }
+.icon { padding: 6px 12px; }
 button:disabled { opacity: .5; cursor: default; }
-
-.month { display: grid; gap: 8px; }
-.month h2 { color: var(--muted); }
-ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-li.item { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--line); }
-.date { text-align: center; font-variant-numeric: tabular-nums; }
-.date .d { font-family: var(--f-display); font-size: 1.6rem; line-height: 1; }
-.date .w { font-size: .75rem; color: var(--muted); font-weight: 700; }
-.date .w.sat { color: var(--accent); } .date .w.sun { color: var(--danger); }
-.body { min-width: 0; display: grid; gap: 2px; }
-.top { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
-.time { font-weight: 700; font-variant-numeric: tabular-nums; }
-.place { overflow-wrap: anywhere; }
-.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
-.chip { font-size: .75rem; font-weight: 700; padding: 1px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
-.chip.me { border-color: var(--accent); color: var(--accent); }
-.chip.him { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
-.chip.off { background: var(--danger); border-color: var(--danger); color: var(--surface); }
-.note { color: var(--muted); font-size: .88rem; white-space: pre-wrap; overflow-wrap: anywhere; }
-.item.cancelled .top, .item.cancelled .date { text-decoration: line-through; opacity: .55; }
-.tools { display: flex; gap: 12px; margin-top: 4px; flex-wrap: wrap; }
-.link { background: none; border: none; padding: 2px 0; color: var(--accent); font-size: .82rem; font-weight: 700; border-radius: 4px; }
-.link.del { color: var(--danger); }
-.confirm { font-size: .82rem; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-
-.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 20px; color: var(--muted); }
-details summary { cursor: pointer; color: var(--muted); font-weight: 700; font-size: .9rem; }
-details[open] summary { margin-bottom: 8px; }
 </style>
 
 <div class="wrap">
   <header>
     <h1>スケボースクール予定帳</h1>
-    <p class="sub">ふたりで同じ予定を見て、追加・変更できます。送迎担当も決めておけます。</p>
+    <p class="sub">ふたりで同じカレンダーを見て、予定を追加・変更できます。</p>
   </header>
 
   <section class="next" id="next" hidden>
@@ -97,76 +123,106 @@ details[open] summary { margin-bottom: 8px; }
 
   <p class="status" id="status">予定を読み込んでいます…</p>
 
+  <section class="cal" aria-label="カレンダー">
+    <div class="calhead">
+      <h2 id="calTitle"></h2>
+      <div class="nav">
+        <button type="button" class="ghost icon" id="prev" aria-label="前の月">‹</button>
+        <button type="button" class="ghost icon" id="thisMonth">今月</button>
+        <button type="button" class="ghost icon" id="nextM" aria-label="次の月">›</button>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="legend"><span>レッスン</span><span class="lm">ミニミニ必要</span></div>
+  </section>
+
+  <section class="dayview">
+    <h2 id="dayTitle"></h2>
+    <ul id="dayList"></ul>
+    <p class="empty" id="dayEmpty" hidden>この日の予定はありません。下のフォームから追加できます。</p>
+  </section>
+
   <form id="form" autocomplete="off">
     <h2 id="formTitle">予定を追加</h2>
     <div class="row">
       <label>日付<input type="date" id="fDate" required></label>
-      <label>場所<input type="text" id="fPlace" placeholder="例：〇〇スケートパーク" maxlength="80"></label>
+      <label>名前<input type="text" id="fName" placeholder="例：初心者クラス" maxlength="60" required></label>
     </div>
     <div class="row">
-      <label>開始<input type="time" id="fStart" required></label>
-      <label>終了<input type="time" id="fEnd"></label>
+      <label>開始時間<input type="time" id="fStart" required></label>
+      <label>終了時間<input type="time" id="fEnd"></label>
     </div>
-    <div class="row">
-      <label>送迎担当
-        <select id="fWho">
-          <option value="">未定</option>
-          <option value="me">わたし</option>
-          <option value="him">夫</option>
-          <option value="both">ふたりで</option>
-        </select>
-      </label>
-      <label>状態
-        <select id="fState">
-          <option value="ok">予定どおり</option>
-          <option value="off">休み・中止</option>
-        </select>
-      </label>
-    </div>
-    <label>メモ<textarea id="fNote" placeholder="持ち物、振替、月謝など" maxlength="400"></textarea></label>
+    <fieldset>
+      <legend>ミニミニ</legend>
+      <div class="seg">
+        <input type="radio" name="mini" id="fMiniNeed" value="need"><label for="fMiniNeed">必要</label>
+        <input type="radio" name="mini" id="fMiniNo" value="no" checked><label for="fMiniNo">いらない</label>
+      </div>
+    </fieldset>
+    <label>メモ<textarea id="fNote" placeholder="持ち物、振替など" maxlength="400"></textarea></label>
     <div class="actions">
       <button type="submit" class="primary" id="fSubmit">追加する</button>
       <button type="button" class="ghost" id="fCancel" hidden>編集をやめる</button>
     </div>
   </form>
-
-  <section id="list"></section>
-
-  <details id="pastWrap" hidden>
-    <summary id="pastSummary">終わった予定</summary>
-    <section id="past"></section>
-  </details>
 </div>
 
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
   const WD = ["日", "月", "火", "水", "木", "金", "土"];
-  const WHO = { me: "送迎：わたし", him: "送迎：夫", both: "送迎：ふたり", "": "送迎：未定" };
   let col = null, docs = [], editingId = null, confirmId = null;
 
-  const todayStr = () => { const t = new Date(); return t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0"); };
+  const pad = (n) => String(n).padStart(2, "0");
+  const ymd = (d) => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   const parse = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
-  const setStatus = (msg, err) => { const s = $("status"); s.textContent = msg; s.hidden = !msg; s.classList.toggle("err", !!err); };
+  const todayStr = () => ymd(new Date());
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const timeText = (l) => (l.start || "") + (l.end ? "〜" + l.end : "");
+  const nameOf = (l) => l.name || l.place || "レッスン";
+  const jpDate = (s) => { const d = parse(s); return (d.getMonth() + 1) + "月" + d.getDate() + "日（" + WD[d.getDay()] + "）"; };
+  const setStatus = (msg, err) => { const s = $("status"); s.textContent = msg; s.hidden = !msg; s.classList.toggle("err", !!err); };
 
-  $("fDate").value = todayStr();
-  $("fStart").value = "10:00";
+  let selected = todayStr();
+  let view = parse(selected); view.setDate(1);
+
+  function byDate() {
+    const m = {};
+    for (const l of docs) { if (!l.date) continue; (m[l.date] = m[l.date] || []).push(l); }
+    for (const k in m) m[k].sort((a, b) => (a.start || "").localeCompare(b.start || ""));
+    return m;
+  }
+
+  function renderCalendar(map) {
+    $("calTitle").textContent = view.getFullYear() + "年" + (view.getMonth() + 1) + "月";
+    const g = $("grid"); g.replaceChildren();
+    WD.forEach((w, i) => g.append(el("div", "dow" + (i === 6 ? " sat" : i === 0 ? " sun" : ""), w)));
+    const start = new Date(view); start.setDate(1 - view.getDay());
+    const today = todayStr();
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(start); d.setDate(start.getDate() + i);
+      if (i === 35 && d.getMonth() !== view.getMonth()) break;
+      const key = ymd(d), wd = d.getDay();
+      const b = el("button", "day" + (d.getMonth() !== view.getMonth() ? " other" : "") + (wd === 6 ? " sat" : wd === 0 ? " sun" : "")
+        + (key === today ? " today" : "") + (key === selected ? " sel" : ""));
+      b.type = "button";
+      const items = map[key] || [];
+      b.setAttribute("aria-label", jpDate(key) + (items.length ? "、予定" + items.length + "件" : ""));
+      b.append(el("span", "num", String(d.getDate())));
+      items.slice(0, 2).forEach((l) => b.append(el("span", "ev" + (l.mini === "need" ? " mini" : ""), (l.start || "") + " " + nameOf(l))));
+      if (items.length > 2) b.append(el("span", "more", "+" + (items.length - 2)));
+      b.onclick = () => { selected = key; if (!editingId) $("fDate").value = key; confirmId = null; render(); };
+      g.append(b);
+    }
+  }
 
   function itemNode(l) {
-    const d = parse(l.date), wd = d.getDay();
-    const li = el("li", "item" + (l.state === "off" ? " cancelled" : ""));
-    const date = el("div", "date");
-    date.append(el("div", "d", String(d.getDate())), el("div", "w" + (wd === 6 ? " sat" : wd === 0 ? " sun" : ""), WD[wd] + "曜"));
-    const body = el("div", "body");
+    const li = el("li", "item");
     const top = el("div", "top");
-    top.append(el("span", "time", timeText(l)), el("span", "place", l.place || "場所未定"));
-    const chips = el("div", "chips");
-    if (l.state === "off") chips.append(el("span", "chip off", "休み・中止"));
-    chips.append(el("span", "chip" + (l.who === "me" ? " me" : l.who === "him" || l.who === "both" ? " him" : ""), WHO[l.who || ""]));
-    body.append(top, chips);
-    if (l.note) body.append(el("div", "note", l.note));
+    top.append(el("span", "time", timeText(l)), el("span", "name", nameOf(l)),
+      el("span", "chip" + (l.mini === "need" ? " need" : ""), "ミニミニ：" + (l.mini === "need" ? "必要" : "いらない")));
+    li.append(top);
+    if (l.note) li.append(el("div", "note", l.note));
     const tools = el("div", "tools");
     if (confirmId === l.id) {
       const c = el("div", "confirm");
@@ -180,65 +236,47 @@ details[open] summary { margin-bottom: 8px; }
       const del = el("button", "link del", "削除"); del.type = "button"; del.onclick = () => { confirmId = l.id; render(); };
       tools.append(ed, del);
     }
-    body.append(tools);
-    li.append(date, body);
+    li.append(tools);
     return li;
   }
 
-  function groupInto(container, items) {
-    container.replaceChildren();
-    let curKey = null, ul = null;
-    for (const l of items) {
-      const d = parse(l.date), key = d.getFullYear() + "-" + d.getMonth();
-      if (key !== curKey) {
-        curKey = key;
-        const m = el("div", "month");
-        m.append(el("h2", null, d.getFullYear() + "年" + (d.getMonth() + 1) + "月"));
-        ul = el("ul"); m.append(ul); container.append(m);
-      }
-      ul.append(itemNode(l));
-    }
-  }
-
   function render() {
-    const today = todayStr();
-    const sorted = docs.slice().sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
-    const upcoming = sorted.filter((l) => l.date >= today);
-    const past = sorted.filter((l) => l.date < today).reverse();
+    const map = byDate();
+    renderCalendar(map);
 
-    const nxt = upcoming.find((l) => l.state !== "off");
+    const today = todayStr();
+    const nxt = docs.filter((l) => l.date >= today).sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start))[0];
     $("next").hidden = !nxt;
     if (nxt) {
-      const d = parse(nxt.date);
-      $("nextWhen").textContent = (d.getMonth() + 1) + "月" + d.getDate() + "日（" + WD[d.getDay()] + "）" + timeText(nxt);
-      $("nextMeta").textContent = (nxt.place || "場所未定") + "・" + WHO[nxt.who || ""];
+      $("nextWhen").textContent = jpDate(nxt.date) + " " + timeText(nxt);
+      $("nextMeta").textContent = nameOf(nxt) + "・ミニミニ" + (nxt.mini === "need" ? "必要" : "いらない");
     }
 
-    if (upcoming.length) groupInto($("list"), upcoming);
-    else {
-      const e = el("div", "empty", col ? "これからの予定はまだありません。上のフォームから最初のレッスンを追加してください。" : "");
-      $("list").replaceChildren(col ? e : "");
-    }
-    $("pastWrap").hidden = !past.length;
-    $("pastSummary").textContent = "終わった予定（" + past.length + "件）";
-    groupInto($("past"), past);
+    $("dayTitle").textContent = jpDate(selected) + "の予定";
+    const items = map[selected] || [];
+    $("dayList").replaceChildren(...items.map(itemNode));
+    $("dayEmpty").hidden = items.length > 0;
   }
+
+  function moveMonth(n) { view = new Date(view.getFullYear(), view.getMonth() + n, 1); render(); }
+  $("prev").onclick = () => moveMonth(-1);
+  $("nextM").onclick = () => moveMonth(1);
+  $("thisMonth").onclick = () => { selected = todayStr(); view = parse(selected); view.setDate(1); if (!editingId) $("fDate").value = selected; render(); };
 
   function readForm() {
     return {
-      date: $("fDate").value, start: $("fStart").value, end: $("fEnd").value,
-      place: $("fPlace").value.trim(), who: $("fWho").value, state: $("fState").value,
-      note: $("fNote").value.trim(), updatedAt: new Date().toISOString(),
+      date: $("fDate").value, name: $("fName").value.trim(), start: $("fStart").value, end: $("fEnd").value,
+      mini: $("fMiniNeed").checked ? "need" : "no", note: $("fNote").value.trim(), updatedAt: new Date().toISOString(),
     };
   }
   function resetForm() {
-    editingId = null; $("form").reset(); $("fDate").value = todayStr(); $("fStart").value = "10:00";
+    editingId = null; $("form").reset(); $("fDate").value = selected; $("fStart").value = "10:00";
     $("formTitle").textContent = "予定を追加"; $("fSubmit").textContent = "追加する"; $("fCancel").hidden = true;
   }
   function startEdit(l) {
     editingId = l.id;
-    $("fDate").value = l.date || ""; $("fStart").value = l.start || ""; $("fEnd").value = l.end || "";
-    $("fPlace").value = l.place || ""; $("fWho").value = l.who || ""; $("fState").value = l.state || "ok"; $("fNote").value = l.note || "";
+    $("fDate").value = l.date || ""; $("fName").value = nameOf(l); $("fStart").value = l.start || ""; $("fEnd").value = l.end || "";
+    (l.mini === "need" ? $("fMiniNeed") : $("fMiniNo")).checked = true; $("fNote").value = l.note || "";
     $("formTitle").textContent = "予定を編集"; $("fSubmit").textContent = "変更を保存"; $("fCancel").hidden = false;
     $("form").scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -251,9 +289,11 @@ details[open] summary { margin-bottom: 8px; }
     btn.disabled = true;
     try {
       if (editingId) await col.doc(editingId).set(data); else await col.add(data);
-      resetForm(); setStatus("");
+      selected = data.date; view = parse(selected); view.setDate(1);
+      resetForm(); setStatus(""); render();
     } catch (e) {
-      setStatus(e && e.code === "not_granted" || e && e.code === "permission_denied"
+      const code = e && e.code;
+      setStatus(code === "not_granted" || code === "permission_denied"
         ? "このページを編集する権限がありません。共有した人に「編集できる」権限をもらってください。"
         : "保存できませんでした。通信状況を確認して、もう一度お試しください。", true);
     } finally { btn.disabled = false; }
@@ -265,6 +305,7 @@ details[open] summary { margin-bottom: 8px; }
     catch (e) { setStatus("削除できませんでした。編集権限と通信状況を確認してください。", true); render(); }
   }
 
+  $("fDate").value = selected; $("fStart").value = "10:00";
   render();
   (async () => {
     const db = window.claude ? await window.claude.use("db") : null;
